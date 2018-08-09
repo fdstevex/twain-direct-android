@@ -16,7 +16,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:name=".TwainDirectSampleApplication">
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -43,7 +44,7 @@
 
         <activity
             android:name=".FileListActivity"
-            android:label= "@string/title_activity_file_list"
+            android:label="@string/title_activity_file_list"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
@@ -54,9 +55,18 @@
         <provider
             android:name=".ImageFileProvider"
             android:authorities="org.twaindirect.sample.provider"
-            android:exported="true"
-            />
+            android:exported="true" />
 
+        <activity
+            android:name=".cloud.CloudLoginActivity"
+            android:label="@string/title_activity_select_cloud_scanner"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.twaindirect.sample.MainActivity" />
+        </activity>
+        <activity android:name=".cloud.CloudScannerListActivity"></activity>
     </application>
 
 </manifest>

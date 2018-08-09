@@ -2,6 +2,7 @@ package org.twaindirect.sample;
 
 import android.Manifest;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -30,6 +31,7 @@ import org.json.JSONObject;
 import org.twaindirect.discovery.AndroidServiceDiscoverer;
 import org.twaindirect.discovery.ScannerDiscoveredListener;
 import org.twaindirect.discovery.ScannerInfo;
+import org.twaindirect.sample.cloud.CloudLoginActivity;
 import org.twaindirect.session.AsyncResponse;
 import org.twaindirect.session.AsyncResult;
 import org.twaindirect.session.Session;
@@ -123,8 +125,7 @@ public class MainActivity extends AppCompatActivity implements SessionListener {
         tv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, ScannerPickerActivity.class);
-                startActivity(intent);
+                promptLocalOrCloud();
             }
         });
 
@@ -812,5 +813,27 @@ public class MainActivity extends AppCompatActivity implements SessionListener {
                 }
             }
         });
+    }
+
+    void promptLocalOrCloud() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.local_or_cloud);
+        builder.setPositiveButton(R.string.cloud, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent intent = new Intent(MainActivity.this, CloudLoginActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        builder.setNeutralButton(R.string.local, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+            Intent intent = new Intent(MainActivity.this, ScannerPickerActivity.class);
+            startActivity(intent);
+            }
+        });
+
+        builder.create().show();
     }
 }
