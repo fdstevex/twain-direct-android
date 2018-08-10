@@ -8,6 +8,7 @@ import org.apache.http.client.methods.HttpRequestBaseHC4;
 import org.apache.http.entity.StringEntityHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtilsHC4;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,7 +17,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-class HttpJsonRequest implements Runnable {
+public class HttpJsonRequest implements Runnable {
     private static final String TAG = "HttpJsonRequest";
 
     public URL url;
@@ -27,7 +28,7 @@ class HttpJsonRequest implements Runnable {
     public int readTimeout = 30000;
     public int connectTimeout = 15000;
 
-    AsyncResult<JSONObject> listener;
+    public AsyncResult<JSONObject> listener;
 
     public JSONObject requestBody;
 
@@ -69,8 +70,20 @@ class HttpJsonRequest implements Runnable {
 
             // Turn into a JSONObject and return it
             String json = EntityUtilsHC4.toString(response.getEntity(), "UTF-8");
-            JSONObject jsonObject = new JSONObject(json);
-            listener.onResult(jsonObject);
+            try {
+                JSONObject jsonObject = new JSONObject(json);
+                listener.onResult(jsonObject);
+                return;
+            } catch (JSONException e) {
+                // Ok that didn't work, let's try converting it to a JSONArray
+            }
+
+            // The root object is an array .. wrap it an an object just so we can return it
+            // as a JSONObject.
+            JSONArray jsonArray = new JSONArray(json);
+            JSONObject root = new JSONObject();
+            root.put("array", jsonArray);
+            listener.onResult(root);
         } catch (IOException | JSONException e) {
             listener.onError(e);
         }

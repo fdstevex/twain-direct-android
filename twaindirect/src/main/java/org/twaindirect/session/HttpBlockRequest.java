@@ -36,7 +36,7 @@ class HttpBlockRequest implements Runnable {
         String result = null;
         try {
             //Create a connection
-            CloseableHttpClient httpClient =  HttpClientBuilder.createHttpClient(url.getHost(), ipaddr);
+            CloseableHttpClient httpClient = HttpClientBuilder.createHttpClient(url.getHost(), ipaddr);
             HttpPostHC4 request = new HttpPostHC4(url.toString());
 
             RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(connectTimeout).setSocketTimeout(readTimeout).build();

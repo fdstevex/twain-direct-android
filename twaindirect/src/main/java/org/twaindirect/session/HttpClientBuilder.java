@@ -37,8 +37,11 @@ class HttpClientBuilder {
     public static CloseableHttpClient createHttpClient(String host, String ipaddr) throws UnknownHostException {
 
         try {
-            InMemoryDnsResolver resolver = new InMemoryDnsResolver();
-            resolver.add(host, InetAddress.getByName(ipaddr));
+            InMemoryDnsResolver resolver = null;
+            if (ipaddr != null) {
+                resolver = new InMemoryDnsResolver();
+                resolver.add(host, InetAddress.getByName(ipaddr));
+            }
 
             SSLContextBuilder builder = new SSLContextBuilder();
             builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
