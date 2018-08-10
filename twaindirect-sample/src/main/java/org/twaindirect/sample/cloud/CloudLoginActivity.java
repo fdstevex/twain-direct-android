@@ -3,8 +3,6 @@ package org.twaindirect.sample.cloud;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -12,7 +10,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import org.twaindirect.cloud.CloudConnection;
-import org.twaindirect.sample.MainActivity;
 import org.twaindirect.sample.R;
 import org.twaindirect.sample.TwainDirectSampleApplication;
 
@@ -23,7 +20,7 @@ public class CloudLoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_select_cloud_scanner);
+        setContentView(R.layout.activity_cloud_login);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -64,15 +61,18 @@ public class CloudLoginActivity extends AppCompatActivity {
         proceedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String authToken = ((EditText)findViewById(R.id.cloud_url)).getText().toString();
+                String authToken = ((EditText)findViewById(R.id.auth_token)).getText().toString();
                 String url = getEnteredUrl();
+                if (!url.endsWith("/")) {
+                    url = url + "/";
+                }
 
                 // Set the application's cloudConnection
                 CloudConnection cloudConnection = new CloudConnection(url, authToken, null);
                 ((TwainDirectSampleApplication)getApplication()).cloudConnection = cloudConnection;
 
                 // Kick off the scanner list activity
-                Intent intent = new Intent(CloudLoginActivity.this, CloudScannerListActivity.class);
+                Intent intent = new Intent(CloudLoginActivity.this, CloudScannerPickerActivity.class);
                 startActivity(intent);
             }
         });
