@@ -37,15 +37,11 @@ public class CloudScannerInfoArrayAdapter extends ArrayAdapter<CloudScannerInfo>
         TextView titleView = convertView.findViewById(R.id.title);
         TextView detailsView = convertView.findViewById(R.id.details);
 
-        titleView.setText("scanner");
-
-        String details = scannerInfo.getScannerInfo().toString() + "\n" + scannerInfo.getScannerInfo().getFqdn();
-        String note = scannerInfo.getScannerInfo().getNote();
+        titleView.setText(scannerInfo.getName());
+        String note = scannerInfo.getDescription();
         if (note != null) {
-            details = details + "\n" + note;
+            detailsView.setText(note);
         }
-
-        detailsView.setText(details);
 
         return convertView;
     }

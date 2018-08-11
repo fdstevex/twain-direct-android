@@ -44,6 +44,7 @@ public class CloudScannerPickerActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 CloudScannerInfo selectedScanner = scanners.get(i);
 
+                // TODO: Remember the selected cloud scanner
 //                SharedPreferences prefs = Preferences.getSharedPreferences(ScannerPickerActivity.this);
 //                prefs.edit().putString("selectedScanner", selectedScanner.toJSON()).apply();
             }
@@ -61,8 +62,17 @@ public class CloudScannerPickerActivity extends AppCompatActivity {
         TwainDirectSampleApplication application = (TwainDirectSampleApplication)getApplication();
         application.cloudConnection.getScannerList(new AsyncResult<List<CloudScannerInfo>>() {
             @Override
-            public void onResult(List<CloudScannerInfo> result) {
+            public void onResult(final List<CloudScannerInfo> scanners) {
                 System.out.println("Got scanner list");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        scannerAdapter.clear();
+                        scannerAdapter.addAll(scanners);
+                        scannerAdapter.notifyDataSetChanged();
+                    }
+                });
+
             }
 
             @Override

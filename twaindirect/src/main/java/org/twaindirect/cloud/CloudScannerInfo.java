@@ -5,34 +5,42 @@ import org.twaindirect.discovery.ScannerInfo;
 
 /**
  * Information from TWAIN Cloud about a specific scanner.
- * This includes the result from the cloud API, and the
- * TWAIN Local /privet/infoex response.
+ * This includes the result from the cloud API and the event broker info needed
+ * to get responses from the scanner.
  */
 public class CloudScannerInfo {
     // TWAIN Direct URL for this scanner
     private String cloudUrl;
 
-    // MQTT WebSocket URL for request responses and events
-    private String mqttUrl;
+    CloudEventBrokerInfo eventBrokerInfo;
 
-    // MQTT topic to listen on for responses
-    private String responseTopic;
+    // The original JSON we received
+    private JSONObject cloudScannerJSON;
 
-    // Scanner ID
-    private String id;
+    public CloudScannerInfo(String baseUrl, CloudEventBrokerInfo eventBrokerInfo, JSONObject cloudScannerJSON) {
+        this.cloudScannerJSON = cloudScannerJSON;
+        this.eventBrokerInfo = eventBrokerInfo;
 
-    // TWAIN Direct scanner info
-    private ScannerInfo scannerInfo;
+        if (!baseUrl.endsWith("/")) {
+            baseUrl = baseUrl + "/";
+        }
 
-    CloudScannerInfo(JSONObject scannerInfoResponse, ScannerInfo scannerInfo) {
-
+        this.cloudUrl = baseUrl + "scanners/" + getScannerId();
     }
 
-    public ScannerInfo getScannerInfo() {
-        return scannerInfo;
+    public String getScannerId() {
+        return cloudScannerJSON.getString("id");
     }
 
     public String getCloudUrl() {
         return cloudUrl;
+    }
+
+    public String getName() {
+        return cloudScannerJSON.getString("name");
+    }
+
+    public String getDescription() {
+        return cloudScannerJSON.getString("description");
     }
 }

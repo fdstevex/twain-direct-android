@@ -1,5 +1,6 @@
 package org.twaindirect.cloud;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.twaindirect.discovery.ScannerInfo;
 import org.twaindirect.session.AsyncResult;
@@ -7,6 +8,7 @@ import org.twaindirect.session.HttpJsonRequest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,12 +25,6 @@ public class CloudConnection {
     private String authToken;
     private String refreshToken;
 
-    class EventBrokerInfo {
-        String type;
-        String url;
-        String topic;
-    }
-
     private ExecutorService executor = Executors.newFixedThreadPool(1);
 
     public CloudConnection(String baseUrl, String authToken, String refreshToken) {
@@ -38,13 +34,29 @@ public class CloudConnection {
     }
 
     public void getScannerList(final AsyncResult<List<CloudScannerInfo>> response) {
-        getEventBrokerInfo(new AsyncResult<EventBrokerInfo>() {
+        getEventBrokerInfo(new AsyncResult<CloudEventBrokerInfo>() {
             @Override
-            public void onResult(EventBrokerInfo result) {
+            public void onResult(final CloudEventBrokerInfo eventBrokerInfo) {
                 getScannerListJSON(new AsyncResult<JSONObject>() {
                     @Override
                     public void onResult(JSONObject result) {
-                        logger.info("Scanner list JSON: " + result.toString(2));
+                        ArrayList<CloudScannerInfo> cloudScanners = new ArrayList<>();
+                        if (!result.has("array")) {
+                            // Didn't get any scanners in the response
+                            response.onResult(cloudScanners);
+                            return;
+                        }
+
+                        // Turn the JSON array into an array of CloudScannerInfo to return
+                        JSONArray scanners = result.getJSONArray("array");
+                        for (int idx=0; idx<scanners.length(); idx++) {
+                            JSONObject scannerCloudInfo = scanners.getJSONObject(idx);
+
+                            CloudScannerInfo csi = new CloudScannerInfo(baseUrl, eventBrokerInfo, scannerCloudInfo);
+                            cloudScanners.add(csi);
+                        }
+
+                        response.onResult(cloudScanners);
                     }
 
                     @Override
@@ -94,7 +106,7 @@ public class CloudConnection {
      * Fetch the /user endpoint and extract the EventBroker info
      * @param response
      */
-    private void getEventBrokerInfo(final AsyncResult<EventBrokerInfo> response) {
+    private void getEventBrokerInfo(final AsyncResult<CloudEventBrokerInfo> response) {
         // First request the user endpoint, so we know the MQTT response topic to subscribe to
         HttpJsonRequest request = new HttpJsonRequest();
         try {
@@ -109,12 +121,17 @@ public class CloudConnection {
             @Override
             public void onResult(JSONObject result) {
                 if (!result.has("eventBroker")) {
-                    logger.severe("eventBroker key missing from user JSON response");
-                    response.onError(null);
+                    if (result.has("message")) {
+                        String message = result.getString("message");
+                        response.onError(new Exception(message));
+                        return;
+                    }
+
+                    response.onError(new Exception("eventBroker key missing from user JSON response"));
                     return;
                 }
 
-                EventBrokerInfo eventBrokerInfo = new EventBrokerInfo();
+                CloudEventBrokerInfo eventBrokerInfo = new CloudEventBrokerInfo();
 
                 JSONObject eventBroker = result.getJSONObject("eventBroker");
                 eventBrokerInfo.topic = eventBroker.getString("topic");
