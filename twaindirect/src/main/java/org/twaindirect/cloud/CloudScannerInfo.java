@@ -5,21 +5,17 @@ import org.twaindirect.discovery.ScannerInfo;
 
 /**
  * Information from TWAIN Cloud about a specific scanner.
- * This includes the result from the cloud API and the event broker info needed
- * to get responses from the scanner.
+ * Clients receive a list of these back from CloudConnection.getScannerList
  */
 public class CloudScannerInfo {
     // TWAIN Direct URL for this scanner
     private String cloudUrl;
-
-    CloudEventBrokerInfo eventBrokerInfo;
 
     // The original JSON we received
     private JSONObject cloudScannerJSON;
 
     public CloudScannerInfo(String baseUrl, CloudEventBrokerInfo eventBrokerInfo, JSONObject cloudScannerJSON) {
         this.cloudScannerJSON = cloudScannerJSON;
-        this.eventBrokerInfo = eventBrokerInfo;
 
         if (!baseUrl.endsWith("/")) {
             baseUrl = baseUrl + "/";

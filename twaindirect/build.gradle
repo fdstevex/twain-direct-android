@@ -7,6 +7,7 @@ dependencies {
     implementation 'org.apache.httpcomponents:httpclient:4.3.5'
     implementation 'org.apache.httpcomponents:httpclient-android:4.3.5.1'
     implementation 'org.json:json:20170516'
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
 }
 
 buildscript {

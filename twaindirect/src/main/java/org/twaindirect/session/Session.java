@@ -3,6 +3,7 @@ package org.twaindirect.session;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.twaindirect.cloud.CloudEventBrokerInfo;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -143,8 +144,10 @@ public class Session {
     private boolean imageBlocksDrained;
     private BlockDownloader blockDownloader;
 
+    private String cloudAuthToken;
+
     /**
-     *
+     * Prepare a TWAIN Local session
      * @param url For example, https://myscanner.local:34034/
      * @param scannerIp The IP address that "myscanner.local" resolves to, for mDNS name resolution.
      */
@@ -156,6 +159,16 @@ public class Session {
 
         logger.info("Session startup");
         logger.log(Level.INFO, "Session startup 2");
+    }
+
+    /**
+     * Prepare for a TWAIN Cloud session
+     * @param scannerUrl
+     * @param eventBrokerInfo
+     * @param authToken
+     */
+    public Session(String scannerUrl, CloudEventBrokerInfo eventBrokerInfo, String authToken) {
+
     }
 
     /**

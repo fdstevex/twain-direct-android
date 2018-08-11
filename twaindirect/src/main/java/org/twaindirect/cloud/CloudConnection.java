@@ -100,13 +100,14 @@ public class CloudConnection {
             }
         };
 
-        executor.submit(request);    }
+        executor.submit(request);
+    }
 
     /**
      * Fetch the /user endpoint and extract the EventBroker info
      * @param response
      */
-    private void getEventBrokerInfo(final AsyncResult<CloudEventBrokerInfo> response) {
+    public void getEventBrokerInfo(final AsyncResult<CloudEventBrokerInfo> response) {
         // First request the user endpoint, so we know the MQTT response topic to subscribe to
         HttpJsonRequest request = new HttpJsonRequest();
         try {
@@ -139,6 +140,46 @@ public class CloudConnection {
                 eventBrokerInfo.url = eventBroker.getString("url");
 
                 response.onResult(eventBrokerInfo);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                response.onError(e);
+            }
+        };
+
+        executor.submit(request);
+    }
+
+    /**
+     * Fetch the cloud JSON info for the specified scanner.
+     * @param response
+     */
+    public void getScannerInfoJSON(String scannerId, final AsyncResult<JSONObject> response) {
+        HttpJsonRequest request = new HttpJsonRequest();
+        try {
+            request.url = new URL(baseUrl + "scanners/" + scannerId);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        request.method = "GET";
+        request.headers.put("Authorization", authToken);
+
+        request.listener = new AsyncResult<JSONObject>() {
+            @Override
+            public void onResult(JSONObject result) {
+                if (!result.has("eventBroker")) {
+                    if (result.has("message")) {
+                        String message = result.getString("message");
+                        response.onError(new Exception(message));
+                        return;
+                    }
+
+                    response.onError(new Exception("eventBroker key missing from user JSON response"));
+                    return;
+                }
+
+                response.onResult(result);
             }
 
             @Override
