@@ -9,7 +9,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +21,7 @@ import java.util.Map;
 class HttpBlockRequest implements Runnable {
     private static final String TAG = "HttpBlockRequest";
 
-    public URL url;
+    public URI url;
     public String ipaddr;
     public Map<String, String> headers = new HashMap<String, String>();
 
@@ -30,6 +30,7 @@ class HttpBlockRequest implements Runnable {
 
     public int readTimeout = 30000;
     public int connectTimeout = 20000;
+    public String commandId;
 
     @Override
     public void run() {

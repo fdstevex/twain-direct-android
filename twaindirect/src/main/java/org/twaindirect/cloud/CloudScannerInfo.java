@@ -1,7 +1,8 @@
 package org.twaindirect.cloud;
 
 import org.json.JSONObject;
-import org.twaindirect.discovery.ScannerInfo;
+
+import java.net.URI;
 
 /**
  * Information from TWAIN Cloud about a specific scanner.
@@ -9,26 +10,22 @@ import org.twaindirect.discovery.ScannerInfo;
  */
 public class CloudScannerInfo {
     // TWAIN Direct URL for this scanner
-    private String cloudUrl;
+    private URI cloudUrl;
 
     // The original JSON we received
     private JSONObject cloudScannerJSON;
 
-    public CloudScannerInfo(String baseUrl, CloudEventBrokerInfo eventBrokerInfo, JSONObject cloudScannerJSON) {
+    public CloudScannerInfo(URI baseUrl, CloudEventBrokerInfo eventBrokerInfo, JSONObject cloudScannerJSON) {
         this.cloudScannerJSON = cloudScannerJSON;
 
-        if (!baseUrl.endsWith("/")) {
-            baseUrl = baseUrl + "/";
-        }
-
-        this.cloudUrl = baseUrl + "scanners/" + getScannerId();
+        this.cloudUrl = baseUrl.resolve(baseUrl.getPath() + "/scanners/" + getScannerId());
     }
 
     public String getScannerId() {
         return cloudScannerJSON.getString("id");
     }
 
-    public String getCloudUrl() {
+    public URI getCloudUrl() {
         return cloudUrl;
     }
 

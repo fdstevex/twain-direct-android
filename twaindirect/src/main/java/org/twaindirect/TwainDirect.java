@@ -8,10 +8,7 @@ import org.twaindirect.session.Session;
 import org.twaindirect.session.SessionListener;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
+import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -32,6 +29,8 @@ public class TwainDirect {
     private static final Logger logger = Logger.getLogger(TwainDirect.class.getName());
 
     public static void main(String[] args) {
+        Logger.getLogger("").setLevel(Level.ALL);
+
         try {
             if (args.length == 0) {
                 System.out.println("Usage:");
@@ -44,7 +43,7 @@ public class TwainDirect {
                 // To create a session connected to a cloud scanner, we need to use
                 // CloudSession to create the session for us.
                 final TwainDirect app = new TwainDirect();
-                String apiRoot = args[1];
+                URI apiRoot = new URI(args[1]);
                 String scannerId= args[2];
                 String authToken = args[3];
                 CloudSession cloudSession = new CloudSession(apiRoot, scannerId, authToken);
@@ -65,7 +64,7 @@ public class TwainDirect {
             if (args[0].equals("local")) {
                 // Construct and run a local the session
                 TwainDirect app = new TwainDirect();
-                URL url = new URL(args[1]);
+                URI url = new URI(args[1]);
                 System.out.println("Opening session to " + url);
                 app.runSession(new Session(url, url.getHost()));
             }

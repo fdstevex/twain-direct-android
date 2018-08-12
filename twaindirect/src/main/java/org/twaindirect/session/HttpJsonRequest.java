@@ -11,22 +11,36 @@ import org.apache.http.util.EntityUtilsHC4;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.twaindirect.cloud.CloudEventBroker;
+import org.twaindirect.cloud.CloudEventBrokerListener;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpJsonRequest implements Runnable {
+/**
+ * Wrapper for a JSON request.
+ * For TWAIN Cloud connections, responses to our JSON requests are delivered asynchronously
+ * through the CloudEventBroker. This class is aware of this, and when we're in cloud mode,
+ * will register the request with CloudEventBroker and the JSON response when it arrives.
+ */
+public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
     private static final String TAG = "HttpJsonRequest";
 
-    public URL url;
+    public URI url;
     public String ipaddr;
     public String method = "GET";
+    public String commandId;
     public Map<String, String> headers = new HashMap<String, String>();
 
     public int readTimeout = 30000;
     public int connectTimeout = 15000;
+
+    // Value for the Authorization header - used for TWAIN Cloud
+    public String authorization;
+
+    CloudEventBroker cloudEventBroker;
 
     public AsyncResult<JSONObject> listener;
 
@@ -52,6 +66,10 @@ public class HttpJsonRequest implements Runnable {
 
             request.addHeader("Content-Type", "application/json; charset=UTF-8");
 
+            if (authorization != null) {
+                request.addHeader("Authorization", authorization);
+            }
+
             // Set any custom headers
             for (String key : headers.keySet()) {
                 request.addHeader(key, headers.get(key));
@@ -64,28 +82,52 @@ public class HttpJsonRequest implements Runnable {
                 postRequest.setEntity(new StringEntityHC4(requestBody.toString()));
             }
 
+            if (cloudEventBroker != null) {
+                // The actual response will arrive through MQTT .. add the listener and return
+                cloudEventBroker.addListener(this);
+            }
 
             // Connect to our url, get the response
             CloseableHttpResponse response = httpClient.execute(request);
 
-            // Turn into a JSONObject and return it
-            String json = EntityUtilsHC4.toString(response.getEntity(), "UTF-8");
-            try {
-                JSONObject jsonObject = new JSONObject(json);
-                listener.onResult(jsonObject);
-                return;
-            } catch (JSONException e) {
-                // Ok that didn't work, let's try converting it to a JSONArray
+            if (cloudEventBroker == null) {
+                // Not using MQTT, so we will have the response here
+                String json = EntityUtilsHC4.toString(response.getEntity(), "UTF-8");
+                processResponse(json);
             }
+        } catch (IOException | JSONException e) {
+            listener.onError(e);
+        }
+    }
 
-            // The root object is an array .. wrap it an an object just so we can return it
-            // as a JSONObject.
+    private void processResponse(String json) {
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            listener.onResult(jsonObject);
+            return;
+        } catch (JSONException e) {
+            // Ok that didn't work, let's try converting it to a JSONArray
+        }
+
+        // If root object is an array .. wrap it an an object just so we can return it
+        // as a JSONObject.
+        try {
             JSONArray jsonArray = new JSONArray(json);
             JSONObject root = new JSONObject();
             root.put("array", jsonArray);
             listener.onResult(root);
-        } catch (IOException | JSONException e) {
+        } catch (JSONException e) {
             listener.onError(e);
         }
+    }
+
+    @Override
+    public String getCommandId() {
+        return commandId;
+    }
+
+    @Override
+    public void deliverJSONResponse(String json) {
+        processResponse(json);
     }
 }

@@ -7,6 +7,8 @@ import org.twaindirect.session.AsyncResult;
 import org.twaindirect.session.HttpJsonRequest;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +23,13 @@ import java.util.logging.Logger;
 public class CloudConnection {
     private static final Logger logger = Logger.getLogger(CloudConnection.class.getName());
 
-    private String baseUrl;
+    private URI baseUrl;
     private String authToken;
     private String refreshToken;
 
     private ExecutorService executor = Executors.newFixedThreadPool(1);
 
-    public CloudConnection(String baseUrl, String authToken, String refreshToken) {
+    public CloudConnection(URI baseUrl, String authToken, String refreshToken) {
         this.baseUrl = baseUrl;
         this.authToken = authToken;
         this.refreshToken = refreshToken;
@@ -80,11 +82,7 @@ public class CloudConnection {
     private void getScannerListJSON(final AsyncResult<JSONObject> response) {
         // First request the user endpoint, so we know the MQTT response topic to subscribe to
         HttpJsonRequest request = new HttpJsonRequest();
-        try {
-            request.url = new URL(baseUrl + "scanners");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+        request.url = baseUrl.resolve(baseUrl.getPath() + "/scanners");
         request.method = "GET";
         request.headers.put("Authorization", authToken);
 
@@ -110,11 +108,7 @@ public class CloudConnection {
     public void getEventBrokerInfo(final AsyncResult<CloudEventBrokerInfo> response) {
         // First request the user endpoint, so we know the MQTT response topic to subscribe to
         HttpJsonRequest request = new HttpJsonRequest();
-        try {
-            request.url = new URL(baseUrl + "user");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+        request.url = baseUrl.resolve(baseUrl.getPath() + "/user");
         request.method = "GET";
         request.headers.put("Authorization", authToken);
 
@@ -157,11 +151,7 @@ public class CloudConnection {
      */
     public void getScannerInfoJSON(String scannerId, final AsyncResult<JSONObject> response) {
         HttpJsonRequest request = new HttpJsonRequest();
-        try {
-            request.url = new URL(baseUrl + "scanners/" + scannerId);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+        request.url = baseUrl.resolve(baseUrl.getPath() + "/scanners/" + scannerId);
         request.method = "GET";
         request.headers.put("Authorization", authToken);
 

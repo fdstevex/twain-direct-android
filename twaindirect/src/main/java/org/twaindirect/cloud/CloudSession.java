@@ -1,9 +1,10 @@
 package org.twaindirect.cloud;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.twaindirect.session.AsyncResponse;
 import org.twaindirect.session.AsyncResult;
 import org.twaindirect.session.Session;
+
+import java.net.URI;
 
 /**
  * A TWAIN Cloud client uses the CloudSession object to establish a connection to a
@@ -28,7 +29,7 @@ public class CloudSession {
     /**
      * The URL for the TWAIN Cloud service
      */
-    private String apiRoot;
+    private URI apiRoot;
 
     /**
      * The scanner we're working with.
@@ -43,7 +44,7 @@ public class CloudSession {
     /**
      * MQTT event listener
      */
-    private CloudEventListener cloudEventListener;
+    private CloudEventBroker cloudEventBroker;
 
     /**
      * Prepare the cloud session.
@@ -52,10 +53,7 @@ public class CloudSession {
      * @param scannerId
      * @param authToken
      */
-    public CloudSession(String apiRoot, String scannerId, String authToken) {
-        if (!apiRoot.endsWith("/")) {
-            apiRoot = apiRoot + "/";
-        }
+    public CloudSession(URI apiRoot, String scannerId, String authToken) {
         this.apiRoot = apiRoot;
         this.scannerId = scannerId;
         this.authToken = authToken;
@@ -73,14 +71,16 @@ public class CloudSession {
             @Override
             public void onResult(CloudEventBrokerInfo eventBrokerInfo) {
                 try {
-                    cloudEventListener = new CloudEventListener(authToken, eventBrokerInfo);
-                    cloudEventListener.connect();
+                    cloudEventBroker = new CloudEventBroker(authToken, eventBrokerInfo);
+                    cloudEventBroker.connect();
                 } catch (MqttException e) {
                     listener.onError(e);
                     return;
                 }
 
-                Session session = new Session(apiRoot, eventBrokerInfo, authToken);
+                URI url = apiRoot.resolve(apiRoot.getPath() + "/scanners/" + scannerId);
+
+                Session session = new Session(url, cloudEventBroker, authToken);
                 listener.onResult(session);
             }
 
