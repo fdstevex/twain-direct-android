@@ -6,5 +6,7 @@ public interface CloudEventBrokerListener {
 
     // Received a JSON response
     void deliverJSONResponse(String body);
+
+    boolean keepAlive();
 }
 
