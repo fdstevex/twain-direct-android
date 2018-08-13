@@ -1,6 +1,7 @@
 package org.twaindirect.cloud;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.twaindirect.session.AsyncResponse;
 import org.twaindirect.session.AsyncResult;
 import org.twaindirect.session.Session;
 
@@ -72,16 +73,23 @@ public class CloudSession {
             public void onResult(CloudEventBrokerInfo eventBrokerInfo) {
                 try {
                     cloudEventBroker = new CloudEventBroker(authToken, eventBrokerInfo);
-                    cloudEventBroker.connect();
+                    cloudEventBroker.connect(new AsyncResponse() {
+                        @Override
+                        public void onSuccess() {
+                            URI url = apiRoot.resolve(apiRoot.getPath() + "/scanners/" + scannerId);
+                            Session session = new Session(url, cloudEventBroker, authToken);
+                            listener.onResult(session);
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            listener.onError(e);
+                        }
+                    });
                 } catch (MqttException e) {
                     listener.onError(e);
                     return;
                 }
-
-                URI url = apiRoot.resolve(apiRoot.getPath() + "/scanners/" + scannerId);
-
-                Session session = new Session(url, cloudEventBroker, authToken);
-                listener.onResult(session);
             }
 
             @Override
