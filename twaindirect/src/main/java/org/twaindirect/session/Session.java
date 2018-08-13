@@ -143,14 +143,12 @@ public class Session {
      * @param scannerIp The IP address that "myscanner.local" resolves to, for mDNS name resolution.
      */
     public Session(URI url, String scannerIp) {
-        logger.setLevel(Level.ALL);
         this.url = url;
         this.scannerIp = scannerIp;
         this.cloudEventBroker = null;
         reset();
 
         logger.info("Local session startup");
-        logger.log(Level.INFO, "Session startup 2");
     }
 
     /**
@@ -160,14 +158,12 @@ public class Session {
      * @param authToken
      */
     public Session(URI scannerUrl, CloudEventBroker cloudEventBroker, String authToken) {
-        logger.setLevel(Level.ALL);
         this.url = scannerUrl;
         this.cloudAuthToken = authToken;
         this.cloudEventBroker = cloudEventBroker;
         reset();
 
         logger.info("Cloud session startup");
-        logger.log(Level.INFO, "Session startup 2");
     }
 
     /**
@@ -332,6 +328,8 @@ public class Session {
                                 listener.onError(new SessionException("createSession failed: " + results.toString()));
                                 return;
                             }
+
+                            logger.fine("Created session");
 
                             updateSession(results.getJSONObject("session"));
 

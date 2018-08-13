@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Wrapper for a JSON request.
@@ -26,6 +28,7 @@ import java.util.Map;
  * will register the request with CloudEventBroker and the JSON response when it arrives.
  */
 public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
+    private static final Logger logger = Logger.getLogger(HttpJsonRequest.class.getName());
     private static final String TAG = "HttpJsonRequest";
 
     public URI url;
@@ -50,6 +53,8 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
     public void run() {
         String result = null;
         try {
+            logger.finer("Executing JSON request for " + url + " commandId " + commandId);
+
             //Create a connection
             CloseableHttpClient httpClient = HttpClientBuilder.createHttpClient(url.getHost(), ipaddr);
 
@@ -103,6 +108,7 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
     private void processResponse(String json) {
         try {
             JSONObject jsonObject = new JSONObject(json);
+            logger.finest("Processing response: " + jsonObject.toString(2));
             listener.onResult(jsonObject);
             return;
         } catch (JSONException e) {
@@ -121,13 +127,31 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
         }
     }
 
+    /**
+     * The cloud event broker will use this to determine which listener to deliver response to.
+     * @return
+     */
     @Override
     public String getCommandId() {
         return commandId;
     }
 
+    /**
+     * The cloud event broker will deliver an MQTT response to this listener via this method.
+     * @param json
+     */
     @Override
     public void deliverJSONResponse(String json) {
         processResponse(json);
+    }
+
+    /**
+     * If this is the waitForEvents listener, then we want to keep the listener alive
+     * to receive subsequent requests.
+     * @return
+     */
+    @Override
+    public boolean keepAlive() {
+        return false;
     }
 }

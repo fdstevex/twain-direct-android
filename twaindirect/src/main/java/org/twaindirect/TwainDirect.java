@@ -29,8 +29,6 @@ public class TwainDirect {
     private static final Logger logger = Logger.getLogger(TwainDirect.class.getName());
 
     public static void main(String[] args) {
-        Logger.getLogger("").setLevel(Level.ALL);
-
         try {
             if (args.length == 0) {
                 System.out.println("Usage:");
@@ -44,7 +42,7 @@ public class TwainDirect {
                 // CloudSession to create the session for us.
                 final TwainDirect app = new TwainDirect();
                 URI apiRoot = new URI(args[1]);
-                String scannerId= args[2];
+                String scannerId = args[2];
                 String authToken = args[3];
                 CloudSession cloudSession = new CloudSession(apiRoot, scannerId, authToken);
                 cloudSession.createSession(new AsyncResult<Session>() {
