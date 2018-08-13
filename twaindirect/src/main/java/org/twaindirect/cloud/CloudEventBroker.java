@@ -10,6 +10,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONObject;
+import org.twaindirect.session.AsyncResponse;
 import org.twaindirect.session.BlockDownloader;
 
 import java.util.ArrayList;
@@ -38,8 +39,6 @@ public class CloudEventBroker {
     public CloudEventBroker(String authToken, CloudEventBrokerInfo eventBrokerInfo) throws MqttException {
         this.eventBrokerInfo = eventBrokerInfo;
 
-        logger.setLevel(Level.ALL);
-
         client = new MqttAsyncClient(eventBrokerInfo.url, MqttClient.generateClientId(), new MemoryPersistence());
         client.setCallback(new MqttCallback() {
             @Override
@@ -63,15 +62,29 @@ public class CloudEventBroker {
                 //  "statusCode": 200
                 // }
 
-                // TODO: pick the right listener
+                // Pick the right listener based on the command ID
                 String bodyJSON = payload.getString("body");
+                JSONObject body = new JSONObject(bodyJSON);
+                String commandId = null;
+                if (body.has("commandId")) {
+                    commandId = body.getString("commandId");
+                }
                 CloudEventBrokerListener foundListener = null;
                 for (CloudEventBrokerListener listener : listeners) {
-                    foundListener = listener;
-                    break;
+                    String listenerCommandId = listener.getCommandId();
+                    if ((listenerCommandId== null ? commandId == null : listenerCommandId.equals(commandId))) {
+                        foundListener = listener;
+                        break;
+                    }
                 }
 
-                removeListener(foundListener);
+                if (foundListener == null) {
+                    logger.warning("Received command with no registered listener");
+                } else {
+                    if (!foundListener.keepAlive()) {
+                        removeListener(foundListener);
+                    }
+                }
                 foundListener.deliverJSONResponse(bodyJSON);
             }
 
@@ -94,20 +107,23 @@ public class CloudEventBroker {
         }
     }
 
-    public void connect() throws MqttException {
+    public void connect(final AsyncResponse completion) throws MqttException {
+        logger.fine("Connecting event broker to " + eventBrokerInfo.url);
         client.connect(null, new IMqttActionListener() {
             @Override
             public void onSuccess(IMqttToken asyncActionToken) {
                 try {
+                    logger.fine("Subscribing to " + eventBrokerInfo.topic);
                     client.subscribe(eventBrokerInfo.topic, 0);
+                    completion.onSuccess();
                 } catch (MqttException e) {
-                    e.printStackTrace();
+                    completion.onError(e);
                 }
             }
 
             @Override
-            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                exception.printStackTrace();
+            public void onFailure(IMqttToken asyncActionToken, Throwable throwable) {
+                completion.onError(new Exception(throwable));
             }
         });
     }
