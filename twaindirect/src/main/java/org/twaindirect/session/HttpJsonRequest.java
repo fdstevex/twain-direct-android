@@ -54,6 +54,9 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
         String result = null;
         try {
             logger.finer("Executing JSON request for " + url + " commandId " + commandId);
+            if (requestBody != null) {
+                logger.finest("Request body: " + requestBody.toString(2));
+            }
 
             //Create a connection
             CloseableHttpClient httpClient = HttpClientBuilder.createHttpClient(url.getHost(), ipaddr);
@@ -99,8 +102,16 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
                 // Not using MQTT, so we will have the response here
                 String json = EntityUtilsHC4.toString(response.getEntity(), "UTF-8");
                 processResponse(json);
+            } else {
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    logger.warning("HTTP response " + response.getStatusLine().toString());
+                    String responseBody = EntityUtilsHC4.toString(response.getEntity(), "UTF-8");
+                    logger.finest(responseBody);
+                }
             }
         } catch (IOException | JSONException e) {
+            listener.onError(e);
+        } catch (Exception e) {
             listener.onError(e);
         }
     }
