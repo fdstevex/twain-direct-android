@@ -2,6 +2,7 @@ package org.twaindirect.session;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.twaindirect.cloud.CloudEventBroker;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,6 +48,9 @@ public class BlockDownloader {
 
     // The client application's listener
     private final SessionListener sessionListener;
+
+    private final CloudEventBroker cloudEventBroker;
+    private final String cloudAuthToken;
 
     /**
      * Status of all the blocks we're aware of
@@ -90,10 +95,12 @@ public class BlockDownloader {
         completed
     }
 
-    public BlockDownloader(Session session, File tempDir, SessionListener sessionListener) {
+    public BlockDownloader(Session session, File tempDir, SessionListener sessionListener, CloudEventBroker cloudEventBroker, String cloudAuthToken) {
         this.session = session;
         this.tempDir = tempDir;
         this.sessionListener = sessionListener;
+        this.cloudEventBroker = cloudEventBroker;
+        this.cloudAuthToken = cloudAuthToken;
     }
 
     /**
@@ -193,6 +200,8 @@ public class BlockDownloader {
             params.put("withMetadata", "true");
 
             HttpBlockRequest request = session.createBlockRequest(params);
+            request.authorization = cloudAuthToken;
+            request.cloudEventBroker = cloudEventBroker;
 
             request.listener = new AsyncResult<InputStream>() {
                 @Override

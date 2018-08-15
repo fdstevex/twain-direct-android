@@ -77,7 +77,7 @@ public class TwainDirect {
      * @param session The session to scan from
      */
     private void runSession(final Session session) {
-        logger.info("TwainDirect Test App Startup");
+        logger.info("Session Started");
 
         this.session = session;
         session.setTempDir(new File("/tmp"));

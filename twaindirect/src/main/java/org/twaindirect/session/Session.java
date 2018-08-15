@@ -526,7 +526,7 @@ public class Session {
             return;
         }
 
-        blockDownloader = new BlockDownloader(this, tempDir, sessionListener);
+        blockDownloader = new BlockDownloader(this, tempDir, sessionListener, cloudEventBroker, cloudAuthToken);
 
         files.clear();
 
@@ -900,8 +900,8 @@ public class Session {
         Runnable listener = new Runnable() {
             @Override
             public void run() {
+                logger.info("Starting event listener");
                 while (!stopping) {
-                    logger.info("Starting event listener");
                     try {
                         if (!syncListen()) {
                             break;

@@ -65,6 +65,7 @@ public class CloudEventBroker {
                 // Pick the right listener based on the command ID
                 String bodyJSON = payload.getString("body");
                 JSONObject body = new JSONObject(bodyJSON);
+                logger.fine("Decoded message body: " + body.toString(2));
                 String commandId = null;
                 if (body.has("commandId")) {
                     commandId = body.getString("commandId");
@@ -81,9 +82,7 @@ public class CloudEventBroker {
                 if (foundListener == null) {
                     logger.warning("Received command with no registered listener");
                 } else {
-                    if (!foundListener.keepAlive()) {
-                        removeListener(foundListener);
-                    }
+                    removeListener(foundListener);
                 }
                 foundListener.deliverJSONResponse(bodyJSON);
             }

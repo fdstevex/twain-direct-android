@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,6 +49,8 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
     CloudEventBroker cloudEventBroker;
 
     public AsyncResult<JSONObject> listener;
+
+    CountDownLatch responseReady = new CountDownLatch(1);
 
     public JSONObject requestBody;
 
@@ -91,7 +96,7 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
             }
 
             if (cloudEventBroker != null) {
-                // The actual response will arrive through MQTT .. add the listener and return
+                // The actual response will arrive through MQTT .. add the listener
                 cloudEventBroker.addListener(this);
             }
 
@@ -103,10 +108,17 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
                 String json = EntityUtilsHC4.toString(response.getEntity(), "UTF-8");
                 processResponse(json);
             } else {
+                // Check for an error sending the request
                 if (response.getStatusLine().getStatusCode() != 200) {
                     logger.warning("HTTP response " + response.getStatusLine().toString());
                     String responseBody = EntityUtilsHC4.toString(response.getEntity(), "UTF-8");
                     logger.finest(responseBody);
+                }
+
+                // Block here for the response
+                boolean success = responseReady.await(readTimeout, TimeUnit.MILLISECONDS);
+                if (!success) {
+                    listener.onError(new TimeoutException());
                 }
             }
         } catch (IOException | JSONException e) {
@@ -154,15 +166,6 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
     @Override
     public void deliverJSONResponse(String json) {
         processResponse(json);
-    }
-
-    /**
-     * If this is the waitForEvents listener, then we want to keep the listener alive
-     * to receive subsequent requests.
-     * @return
-     */
-    @Override
-    public boolean keepAlive() {
-        return false;
+        responseReady.countDown();
     }
 }
