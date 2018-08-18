@@ -11,17 +11,17 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONObject;
 import org.twaindirect.session.AsyncResponse;
-import org.twaindirect.session.BlockDownloader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Subscribe to the scanner's MQTT response topic and broker messages.
+ * Commands register the command ID with CloudEventBroker, and responses are
+ * dispatched as they arrive.
  */
 public class CloudEventBroker {
     private static final Logger logger = Logger.getLogger(CloudEventBroker.class.getName());
@@ -94,18 +94,31 @@ public class CloudEventBroker {
         });
     }
 
+    /**
+     * Add a command listener.
+     * @param listener
+     */
     public void addListener(CloudEventBrokerListener listener) {
         synchronized(this) {
             listeners.add(listener);
         }
     }
 
-    public void removeListener(CloudEventBrokerListener listener) {
+    /**
+     * Remove a command listener.
+     * @param listener
+     */
+    private void removeListener(CloudEventBrokerListener listener) {
         synchronized(this) {
             listeners.remove(listener);
         }
     }
 
+    /**
+     * Connect to the MQTT endpoint asynchronously.
+     * @param completion
+     * @throws MqttException
+     */
     public void connect(final AsyncResponse completion) throws MqttException {
         logger.fine("Connecting event broker to " + eventBrokerInfo.url);
         client.connect(null, new IMqttActionListener() {

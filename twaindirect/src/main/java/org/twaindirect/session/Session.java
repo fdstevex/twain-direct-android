@@ -3,15 +3,12 @@ package org.twaindirect.session;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.twaindirect.cloud.CloudBlockRequest;
 import org.twaindirect.cloud.CloudEventBroker;
-import org.twaindirect.cloud.CloudEventBrokerInfo;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +67,7 @@ public class Session {
     /**
      * This is the URL for the root of the scanner host,
      * ie, http://192.168.1.4:55555/
+     * or, if cloud, the cloud API url + "/scanners/{scanner_id}"
      */
     private URI url;
 
@@ -722,7 +720,7 @@ public class Session {
      * @param params
      * @return
      */
-    private HttpJsonRequest createJsonRequest(String method, JSONObject params) {
+    HttpJsonRequest createJsonRequest(String method, JSONObject params) {
         // Create and send the createSession request
         String commandId = UUID.randomUUID().toString();
         JSONObject body = new JSONObject();
@@ -777,6 +775,20 @@ public class Session {
         request.ipaddr = scannerIp;
         request.requestBody = body;
         request.headers.put("X-Privet-Token", privetToken);
+        return request;
+    }
+
+    /**
+     * Helper to create a configured CloudBlockRequest (for BlockDownloader)
+     * @blockId block ID returned in the readImageBlock response when using a cloud source
+     * @return
+     */
+    public CloudBlockRequest createCloudBlockRequest(String blockId) {
+        // Create and send the createSession request
+        CloudBlockRequest request = new CloudBlockRequest();
+        request.url = url.resolve(url.getPath() + "/blocks/" + blockId);
+        request.headers.put("X-Privet-Token", privetToken);
+        request.headers.put("Authorization", cloudAuthToken);
         return request;
     }
 

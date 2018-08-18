@@ -148,7 +148,10 @@ public class TwainDirect {
 
     private void sendTask() {
         // Let's send a task
-        JSONObject task = new JSONObject("{\"actions\": [ { \"action\": \"configure\" } ] }");
+//        JSONObject task = new JSONObject("{\"actions\": [ { \"action\": \"configure\" } ] }");
+
+        // This task requests a B&W image
+        JSONObject task = new JSONObject("{\"actions\":[{\"action\":\"configure\",\"streams\":[{\"sources\":[{\"source\":\"any\",\"pixelFormats\":[{\"pixelFormat\":\"bw1\",\"attributes\":[{\"attribute\":\"compression\",\"values\":[{\"value\":\"autoVersion1\"}]},{\"attribute\":\"numberOfSheets\",\"values\":[{\"value\":1}]}]}]}]}]}]}}");
 
         session.sendTask(task, new AsyncResult<JSONObject>() {
             @Override

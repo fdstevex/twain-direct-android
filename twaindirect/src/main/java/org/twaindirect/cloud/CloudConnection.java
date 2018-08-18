@@ -2,14 +2,10 @@ package org.twaindirect.cloud;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.twaindirect.discovery.ScannerInfo;
 import org.twaindirect.session.AsyncResult;
 import org.twaindirect.session.HttpJsonRequest;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;

@@ -7,7 +7,6 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.impl.conn.InMemoryDnsResolver;
 
@@ -31,7 +30,7 @@ import java.util.logging.Logger;
  *
  * Used by HttpBlockRequest and HttpJsonRequest.
  */
-class HttpClientBuilder {
+public class HttpClientBuilder {
     private static final Logger logger = Logger.getLogger(HttpClientBuilder.class.getName());
 
     public static CloseableHttpClient createHttpClient(String host, String ipaddr) throws UnknownHostException {
