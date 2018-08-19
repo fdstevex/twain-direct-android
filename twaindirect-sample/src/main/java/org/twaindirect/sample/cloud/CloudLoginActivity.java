@@ -1,7 +1,6 @@
 package org.twaindirect.sample.cloud;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -13,7 +12,12 @@ import org.twaindirect.cloud.CloudConnection;
 import org.twaindirect.sample.R;
 import org.twaindirect.sample.TwainDirectSampleApplication;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Logger;
+
 public class CloudLoginActivity extends AppCompatActivity {
+    private static final Logger logger = Logger.getLogger(CloudLoginActivity.class.getName());
 
     EditText urlEditor;
 
@@ -32,12 +36,14 @@ public class CloudLoginActivity extends AppCompatActivity {
         loginGoogleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Build the Facebook login URL by appending the endpoint to the API base
-                String url = getEnteredUrl() + "authentication/signin/facebook";
+                // Build the Google login URL by appending the endpoint to the API base
+                String url = getEnteredUrl() + "authentication/signin/google";
 
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
-                startActivity(i);
+                logger.info("Launching " + url);
+
+                Intent i = new Intent(CloudLoginActivity.this, CloudLoginWebView.class);
+                i.putExtra("url", url);
+                startActivityForResult(i, 1);
             }
         });
 
@@ -45,12 +51,14 @@ public class CloudLoginActivity extends AppCompatActivity {
         loginFacebookButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Build the Google login URL by appending the endpoint to the API base
-                String url = getEnteredUrl() + "authentication/signin/google";
+                // Build the Facebook login URL by appending the endpoint to the API base
+                String url = getEnteredUrl() + "authentication/signin/facebook";
 
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
-                startActivity(i);
+                logger.info("Launching " + url);
+
+                Intent i = new Intent(CloudLoginActivity.this, CloudLoginWebView.class);
+                i.putExtra("url", url);
+                startActivityForResult(i, 1);
             }
         });
 
@@ -62,18 +70,19 @@ public class CloudLoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String authToken = ((EditText)findViewById(R.id.auth_token)).getText().toString();
-                String url = getEnteredUrl();
-                if (!url.endsWith("/")) {
-                    url = url + "/";
+                try {
+                    URI url = new URI(getEnteredUrl());
+
+                    // Set the application's cloudConnection
+                    CloudConnection cloudConnection = new CloudConnection(url, authToken, null);
+                    ((TwainDirectSampleApplication)getApplication()).cloudConnection = cloudConnection;
+
+                    // Kick off the scanner list activity
+                    Intent intent = new Intent(CloudLoginActivity.this, CloudScannerPickerActivity.class);
+                    startActivity(intent);
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
                 }
-
-                // Set the application's cloudConnection
-                CloudConnection cloudConnection = new CloudConnection(url, authToken, null);
-                ((TwainDirectSampleApplication)getApplication()).cloudConnection = cloudConnection;
-
-                // Kick off the scanner list activity
-                Intent intent = new Intent(CloudLoginActivity.this, CloudScannerPickerActivity.class);
-                startActivity(intent);
             }
         });
     }
@@ -88,5 +97,31 @@ public class CloudLoginActivity extends AppCompatActivity {
             url = url + "/";
         }
         return url;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            String authToken = data.getStringExtra(CloudLoginWebView.AUTH_TOKEN_KEY);
+            String refreshToken = data.getStringExtra(CloudLoginWebView.REFRESH_TOKEN_KEY);
+
+            logger.info("Received authToken " + authToken);
+
+            // Set the application's cloudConnection
+            try {
+                URI url = new URI(getEnteredUrl());
+                CloudConnection cloudConnection = new CloudConnection(url, authToken, refreshToken);
+                ((TwainDirectSampleApplication)getApplication()).cloudConnection = cloudConnection;
+
+                // Kick off the scanner list activity
+                Intent intent = new Intent(CloudLoginActivity.this, CloudScannerPickerActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+                startActivity(intent);
+            } catch (URISyntaxException e) {
+                logger.warning(e.getMessage());
+            }
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

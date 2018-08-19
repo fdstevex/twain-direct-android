@@ -4,6 +4,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,7 +23,7 @@ public class ScannerInfo {
     private static final String TAG = "ScannerInfo";
 
     // URL to the scanner's TWAIN Direct endpoint
-    private URL url;
+    private URI url;
 
     // DNS name for the scanner - note that this may not resolve on Android because
     // it's like to be a .local address - but the url should resolve.
@@ -33,14 +35,14 @@ public class ScannerInfo {
     // TXT dictionary from the mDNS discovery
     private Map<String, String> txtDict;
 
-    public ScannerInfo(URL url, String ipaddr, String fqdn, Map<String, String> txtDict) {
+    public ScannerInfo(URI url, String ipaddr, String fqdn, Map<String, String> txtDict) {
         this.url = url;
         this.ipaddr = ipaddr;
         this.txtDict = txtDict;
         this.fqdn = fqdn;
     }
 
-    public URL getUrl() {
+    public URI getUrl() {
         return this.url;
     }
 
@@ -117,12 +119,12 @@ public class ScannerInfo {
                 txtDict.put(key, map.getString(key));
             }
 
-            URL url = new URL(urlString);
+            URI url = new URI(urlString);
             return new ScannerInfo(url, ipaddr, fqdn, txtDict);
         } catch (JSONException e) {
             logger.severe(e.toString());
             return null;
-        } catch (MalformedURLException e) {
+        } catch (URISyntaxException e) {
             logger.severe(e.toString());
             return null;
         }

@@ -44,7 +44,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -370,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements SessionListener {
 
         // No session yet - Start a session
         SharedPreferences prefs = Preferences.getSharedPreferences(this);
-        URL url;
+        URI url;
         String selectedScannerJSON = prefs.getString("selectedScanner", null);
         ScannerInfo scannerInfo = ScannerInfo.fromJSON(selectedScannerJSON);
         url = scannerInfo.getUrl();
