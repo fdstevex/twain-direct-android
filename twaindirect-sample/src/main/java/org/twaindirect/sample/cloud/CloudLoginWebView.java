@@ -1,8 +1,8 @@
 package org.twaindirect.sample.cloud;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -12,7 +12,6 @@ import org.twaindirect.sample.R;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.List;
 
 public class CloudLoginWebView extends AppCompatActivity {

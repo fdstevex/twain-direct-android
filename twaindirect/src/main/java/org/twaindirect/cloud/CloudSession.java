@@ -40,7 +40,7 @@ public class CloudSession {
     /**
      * Cloud API authorization token.
      */
-    private String authToken;
+    private String accessToken;
 
     /**
      * MQTT event listener
@@ -52,12 +52,12 @@ public class CloudSession {
      * Pass in the authorization token.
      * @param apiRoot
      * @param scannerId
-     * @param authToken
+     * @param accessToken
      */
-    public CloudSession(URI apiRoot, String scannerId, String authToken) {
+    public CloudSession(URI apiRoot, String scannerId, String accessToken) {
         this.apiRoot = apiRoot;
         this.scannerId = scannerId;
-        this.authToken = authToken;
+        this.accessToken = accessToken;
     }
 
     /**
@@ -67,17 +67,17 @@ public class CloudSession {
      * @param listener
      */
     public void createSession(final AsyncResult<Session> listener) {
-        CloudConnection connection = new CloudConnection(apiRoot, authToken, null);
+        CloudConnection connection = new CloudConnection(apiRoot, accessToken, null);
         connection.getEventBrokerInfo(new AsyncResult<CloudEventBrokerInfo>() {
             @Override
             public void onResult(CloudEventBrokerInfo eventBrokerInfo) {
                 try {
-                    cloudEventBroker = new CloudEventBroker(authToken, eventBrokerInfo);
+                    cloudEventBroker = new CloudEventBroker(accessToken, eventBrokerInfo);
                     cloudEventBroker.connect(new AsyncResponse() {
                         @Override
                         public void onSuccess() {
                             URI url = apiRoot.resolve(apiRoot.getPath() + "/scanners/" + scannerId);
-                            Session session = new Session(url, cloudEventBroker, authToken);
+                            Session session = new Session(url, cloudEventBroker, accessToken);
                             listener.onResult(session);
                         }
 

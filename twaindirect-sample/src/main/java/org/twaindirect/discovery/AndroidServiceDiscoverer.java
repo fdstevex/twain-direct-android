@@ -60,7 +60,11 @@ public class AndroidServiceDiscoverer {
             } else {
                 url = new URL(protocol, host, port, "/").toURI();
             }
-            return new ScannerInfo(url, host, fqdn, result.txt.dict);
+
+            String name = result.txt.dict.get("ty");
+            String note = result.txt.dict.get("note");
+
+            return new ScannerInfo(url, host, fqdn, name, note);
         } catch (URISyntaxException e) {
             // Ignore - invalid scanner, exclude from list
             logger.severe(e.toString());

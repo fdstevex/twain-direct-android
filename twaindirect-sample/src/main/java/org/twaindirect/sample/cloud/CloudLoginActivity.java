@@ -69,12 +69,12 @@ public class CloudLoginActivity extends AppCompatActivity {
         proceedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String authToken = ((EditText)findViewById(R.id.auth_token)).getText().toString();
+                String accessToken = ((EditText)findViewById(R.id.auth_token)).getText().toString();
                 try {
                     URI url = new URI(getEnteredUrl());
 
                     // Set the application's cloudConnection
-                    CloudConnection cloudConnection = new CloudConnection(url, authToken, null);
+                    CloudConnection cloudConnection = new CloudConnection(url, accessToken, null);
                     ((TwainDirectSampleApplication)getApplication()).cloudConnection = cloudConnection;
 
                     // Kick off the scanner list activity
@@ -102,23 +102,25 @@ public class CloudLoginActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1) {
-            String authToken = data.getStringExtra(CloudLoginWebView.AUTH_TOKEN_KEY);
-            String refreshToken = data.getStringExtra(CloudLoginWebView.REFRESH_TOKEN_KEY);
+            if (data != null) {
+                String accessToken = data.getStringExtra(CloudLoginWebView.AUTH_TOKEN_KEY);
+                String refreshToken = data.getStringExtra(CloudLoginWebView.REFRESH_TOKEN_KEY);
 
-            logger.info("Received authToken " + authToken);
+                logger.info("Received accessToken " + accessToken);
 
-            // Set the application's cloudConnection
-            try {
-                URI url = new URI(getEnteredUrl());
-                CloudConnection cloudConnection = new CloudConnection(url, authToken, refreshToken);
-                ((TwainDirectSampleApplication)getApplication()).cloudConnection = cloudConnection;
+                // Set the application's cloudConnection
+                try {
+                    URI url = new URI(getEnteredUrl());
+                    CloudConnection cloudConnection = new CloudConnection(url, accessToken, refreshToken);
+                    ((TwainDirectSampleApplication) getApplication()).cloudConnection = cloudConnection;
 
-                // Kick off the scanner list activity
-                Intent intent = new Intent(CloudLoginActivity.this, CloudScannerPickerActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
-                startActivity(intent);
-            } catch (URISyntaxException e) {
-                logger.warning(e.getMessage());
+                    // Kick off the scanner list activity
+                    Intent intent = new Intent(CloudLoginActivity.this, CloudScannerPickerActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+                    startActivity(intent);
+                } catch (URISyntaxException e) {
+                    logger.warning(e.getMessage());
+                }
             }
         }
 

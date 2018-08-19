@@ -19,15 +19,15 @@ import java.util.logging.Logger;
 public class CloudConnection {
     private static final Logger logger = Logger.getLogger(CloudConnection.class.getName());
 
-    private URI baseUrl;
-    private String authToken;
+    private URI apiUrl;
+    private String accessToken;
     private String refreshToken;
 
     private ExecutorService executor = Executors.newFixedThreadPool(1);
 
-    public CloudConnection(URI baseUrl, String authToken, String refreshToken) {
-        this.baseUrl = baseUrl;
-        this.authToken = authToken;
+    public CloudConnection(URI apiUrl, String accessToken, String refreshToken) {
+        this.apiUrl = apiUrl;
+        this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }
 
@@ -50,7 +50,7 @@ public class CloudConnection {
                         for (int idx=0; idx<scanners.length(); idx++) {
                             JSONObject scannerCloudInfo = scanners.getJSONObject(idx);
 
-                            CloudScannerInfo csi = new CloudScannerInfo(baseUrl, eventBrokerInfo, scannerCloudInfo);
+                            CloudScannerInfo csi = new CloudScannerInfo(apiUrl, eventBrokerInfo, scannerCloudInfo);
                             cloudScanners.add(csi);
                         }
 
@@ -78,9 +78,9 @@ public class CloudConnection {
     private void getScannerListJSON(final AsyncResult<JSONObject> response) {
         // First request the user endpoint, so we know the MQTT response topic to subscribe to
         HttpJsonRequest request = new HttpJsonRequest();
-        request.url = baseUrl.resolve(baseUrl.getPath() + "/scanners");
+        request.url = apiUrl.resolve(apiUrl.getPath() + "/scanners");
         request.method = "GET";
-        request.headers.put("Authorization", authToken);
+        request.headers.put("Authorization", accessToken);
 
         request.listener = new AsyncResult<JSONObject>() {
             @Override
@@ -104,9 +104,9 @@ public class CloudConnection {
     public void getEventBrokerInfo(final AsyncResult<CloudEventBrokerInfo> response) {
         // First request the user endpoint, so we know the MQTT response topic to subscribe to
         HttpJsonRequest request = new HttpJsonRequest();
-        request.url = baseUrl.resolve(baseUrl.getPath() + "/user");
+        request.url = apiUrl.resolve(apiUrl.getPath() + "/user");
         request.method = "GET";
-        request.headers.put("Authorization", authToken);
+        request.headers.put("Authorization", accessToken);
 
         request.listener = new AsyncResult<JSONObject>() {
             @Override
@@ -147,9 +147,9 @@ public class CloudConnection {
      */
     public void getScannerInfoJSON(String scannerId, final AsyncResult<JSONObject> response) {
         HttpJsonRequest request = new HttpJsonRequest();
-        request.url = baseUrl.resolve(baseUrl.getPath() + "/scanners/" + scannerId);
+        request.url = apiUrl.resolve(apiUrl.getPath() + "/scanners/" + scannerId);
         request.method = "GET";
-        request.headers.put("Authorization", authToken);
+        request.headers.put("Authorization", accessToken);
 
         request.listener = new AsyncResult<JSONObject>() {
             @Override
@@ -175,5 +175,17 @@ public class CloudConnection {
         };
 
         executor.submit(request);
+    }
+
+    public URI getApiUrl() {
+        return apiUrl;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
     }
 }

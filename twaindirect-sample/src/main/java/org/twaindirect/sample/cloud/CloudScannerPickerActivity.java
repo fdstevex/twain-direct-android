@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import org.twaindirect.cloud.CloudConnection;
 import org.twaindirect.cloud.CloudScannerInfo;
 import org.twaindirect.discovery.AndroidServiceDiscoverer;
 import org.twaindirect.discovery.ScannerDiscoveredListener;
@@ -22,6 +23,7 @@ import org.twaindirect.sample.ScannerPickerActivity;
 import org.twaindirect.sample.TwainDirectSampleApplication;
 import org.twaindirect.session.AsyncResult;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,9 +46,17 @@ public class CloudScannerPickerActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 CloudScannerInfo selectedScanner = scanners.get(i);
 
-                // TODO: Remember the selected cloud scanner
-//                SharedPreferences prefs = Preferences.getSharedPreferences(ScannerPickerActivity.this);
-//                prefs.edit().putString("selectedScanner", selectedScanner.toJSON()).apply();
+                TwainDirectSampleApplication application = (TwainDirectSampleApplication)getApplication();
+                CloudConnection cloudConnection = application.cloudConnection;
+                URI apiUrl = application.cloudConnection.getApiUrl();
+
+                // Create a ScannerInfo to save the selected scanner
+                ScannerInfo scannerInfo = new ScannerInfo(apiUrl, cloudConnection.getAccessToken(), cloudConnection.getRefreshToken(), selectedScanner.getScannerId(), selectedScanner.getName(), selectedScanner.getDescription());
+
+                SharedPreferences prefs = Preferences.getSharedPreferences(CloudScannerPickerActivity.this);
+                prefs.edit().putString("selectedScanner", scannerInfo.toJSON()).apply();
+
+                finish();
             }
         });
 

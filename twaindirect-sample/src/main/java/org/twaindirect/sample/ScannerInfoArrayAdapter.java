@@ -35,7 +35,7 @@ public class ScannerInfoArrayAdapter extends ArrayAdapter<ScannerInfo> {
         TextView titleView = convertView.findViewById(R.id.title);
         TextView detailsView = convertView.findViewById(R.id.details);
 
-        titleView.setText(scannerInfo.getFriendlyName());
+        titleView.setText(scannerInfo.getNote());
 
         String details = scannerInfo.getUrl().toString() + "\n" + scannerInfo.getFqdn();
         String note = scannerInfo.getNote();
