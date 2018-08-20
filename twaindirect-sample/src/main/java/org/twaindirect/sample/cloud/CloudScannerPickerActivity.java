@@ -1,9 +1,9 @@
 package org.twaindirect.sample.cloud;
 
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -13,21 +13,20 @@ import android.widget.ListView;
 
 import org.twaindirect.cloud.CloudConnection;
 import org.twaindirect.cloud.CloudScannerInfo;
-import org.twaindirect.discovery.AndroidServiceDiscoverer;
-import org.twaindirect.discovery.ScannerDiscoveredListener;
 import org.twaindirect.discovery.ScannerInfo;
 import org.twaindirect.sample.Preferences;
 import org.twaindirect.sample.R;
-import org.twaindirect.sample.ScannerInfoArrayAdapter;
-import org.twaindirect.sample.ScannerPickerActivity;
 import org.twaindirect.sample.TwainDirectSampleApplication;
 import org.twaindirect.session.AsyncResult;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class CloudScannerPickerActivity extends AppCompatActivity {
+    private static final Logger logger = Logger.getLogger(CloudScannerPickerActivity.class.getName());
+
     ListView listView;
     private static final String TAG = "CloudScannerPickerAct";
     private List<CloudScannerInfo> scanners = new ArrayList<>();
@@ -73,7 +72,7 @@ public class CloudScannerPickerActivity extends AppCompatActivity {
         application.cloudConnection.getScannerList(new AsyncResult<List<CloudScannerInfo>>() {
             @Override
             public void onResult(final List<CloudScannerInfo> scanners) {
-                System.out.println("Got scanner list");
+                logger.info("Got scanner list");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

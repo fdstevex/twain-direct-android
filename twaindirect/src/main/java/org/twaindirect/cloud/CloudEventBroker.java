@@ -43,7 +43,7 @@ public class CloudEventBroker {
         client.setCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
-                System.out.println("connectionLost");
+                logger.warning("MQTT connection lost");
             }
 
             @Override
@@ -89,7 +89,8 @@ public class CloudEventBroker {
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-                System.out.println("deliveryComplete");
+                // We don't send MQTT messages so we never receive deliveryComplete
+                logger.info("deliveryComplete");
             }
         });
     }
