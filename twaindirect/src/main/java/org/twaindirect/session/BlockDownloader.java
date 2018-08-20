@@ -1,11 +1,11 @@
 package org.twaindirect.session;
 
-import org.apache.commons.codec.binary.Base64InputStream;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.twaindirect.cloud.CloudBlockRequest;
 import org.twaindirect.cloud.CloudEventBroker;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -302,15 +302,28 @@ public class BlockDownloader {
                             ImageBlockInfo imageBlockInfo = createImageBlockInfo(metadata, blockNum);
                             String partName = imageBlockInfo.partFileName();
                             File tempFile = new File(tempDir, partName);
-                            // Copy the input stream to the file in 64k chunks, base64 decoding as we go
                             try {
-                                Base64InputStream decoder = new Base64InputStream(imageStream);
-                                FileOutputStream outputStream = new FileOutputStream(tempFile);
+                                // The source stream is base64 encoded, and quoted.
+                                ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
                                 byte[] buffer = new byte[64*1024];
-                                int len;
-                                while ((len = decoder.read(buffer)) != -1) {
-                                    outputStream.write(buffer, 0, len);
+                                int len = 0;
+                                while ((len = imageStream.read(buffer)) != -1) {
+                                    bufferStream.write(buffer, 0, len);
                                 }
+
+                                byte[] imageData = bufferStream.toByteArray();
+                                int offset = 0;
+                                int length = imageData.length;
+
+                                // Adjust for quotes
+                                if (imageData[0] == 34) {
+                                    offset = 1;
+                                    length = length - 2;
+                                }
+
+                                byte[] bytes = Base64.decode(imageData, offset, length, 0);
+                                FileOutputStream outputStream = new FileOutputStream(tempFile);
+                                outputStream.write(bytes);
                                 outputStream.close();
 
                                 completedImageBlockDownload(imageBlockInfo);
