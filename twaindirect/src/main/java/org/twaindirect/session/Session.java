@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -623,7 +624,7 @@ public class Session {
 
             @Override
             public void onError(Exception e) {
-                if (e instanceof SocketTimeoutException) {
+                if (e instanceof SocketTimeoutException || e instanceof TimeoutException) {
                     // This is expected to fail, timeout, etc., and our
                     // response is to retry.  Don't up the retry count.
                 } else {
