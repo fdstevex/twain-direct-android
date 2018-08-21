@@ -1,6 +1,7 @@
 package org.twaindirect;
 
 import org.json.JSONObject;
+import org.twaindirect.cloud.CloudConnection;
 import org.twaindirect.cloud.CloudSession;
 import org.twaindirect.session.AsyncResponse;
 import org.twaindirect.session.AsyncResult;
@@ -33,7 +34,7 @@ public class TwainDirect {
             if (args.length == 0) {
                 System.out.println("Usage:");
                 System.out.println("TwainDirect local http://local-scanner.local:34034");
-                System.out.println("TwainDirect cloud http://my-twain-cloud.com/scanners/my-scanner-id auth-token");
+                System.out.println("TwainDirect cloud http://my-twain-cloud.com/scanners/my-scanner-id auth-token refresh-token");
                 System.exit(1);
             }
 
@@ -44,7 +45,9 @@ public class TwainDirect {
                 URI apiRoot = new URI(args[1]);
                 String scannerId = args[2];
                 String authToken = args[3];
-                CloudSession cloudSession = new CloudSession(apiRoot, scannerId, authToken);
+                String refreshToken = args[4];
+                CloudConnection cloudConnection = new CloudConnection(apiRoot, authToken, refreshToken);
+                CloudSession cloudSession = new CloudSession(apiRoot, scannerId, cloudConnection);
                 cloudSession.createSession(new AsyncResult<Session>() {
                     @Override
                     public void onResult(Session session) {
