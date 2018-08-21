@@ -22,6 +22,10 @@ import java.util.logging.Logger;
 public class CloudBlockRequest implements Runnable {
     private static final Logger logger = Logger.getLogger(CloudBlockRequest.class.getName());
 
+    public CloudBlockRequest(CloudConnection cloudConnection) {
+        this.cloudConnection = cloudConnection;
+    }
+
     // The block's cloud URL
     public URI url;
 
@@ -37,6 +41,9 @@ public class CloudBlockRequest implements Runnable {
     // Connect timeout in milliseconds
     public int connectTimeout = 20000;
 
+    // We use this to get the access token and refresh it if required
+    private final CloudConnection cloudConnection;
+
     @Override
     public void run() {
         String result = null;
@@ -51,6 +58,7 @@ public class CloudBlockRequest implements Runnable {
             request.setConfig(requestConfig);
 
             request.addHeader("Content-Type", "application/json; charset=UTF-8");
+            request.addHeader("Authorization", cloudConnection.getAccessToken());
 
             // Set any custom headers
             for (String key : headers.keySet()) {

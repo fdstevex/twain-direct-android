@@ -48,16 +48,18 @@ public class CloudSession {
     private CloudEventBroker cloudEventBroker;
 
     /**
+     * CloudConnection, which manages and refreshes our access token
+     */
+    private CloudConnection cloudConnection;
+
+    /**
      * Prepare the cloud session.
      * Pass in the authorization token.
-     * @param apiRoot
-     * @param scannerId
-     * @param accessToken
      */
-    public CloudSession(URI apiRoot, String scannerId, String accessToken) {
+    public CloudSession(URI apiRoot, String scannerId, CloudConnection cloudConnection) {
         this.apiRoot = apiRoot;
         this.scannerId = scannerId;
-        this.accessToken = accessToken;
+        this.cloudConnection = cloudConnection;
     }
 
     /**
@@ -67,8 +69,7 @@ public class CloudSession {
      * @param listener
      */
     public void createSession(final AsyncResult<Session> listener) {
-        CloudConnection connection = new CloudConnection(apiRoot, accessToken, null);
-        connection.getEventBrokerInfo(new AsyncResult<CloudEventBrokerInfo>() {
+        cloudConnection.getEventBrokerInfo(new AsyncResult<CloudEventBrokerInfo>() {
             @Override
             public void onResult(CloudEventBrokerInfo eventBrokerInfo) {
                 try {
@@ -77,7 +78,7 @@ public class CloudSession {
                         @Override
                         public void onSuccess() {
                             URI url = apiRoot.resolve(apiRoot.getPath() + "/scanners/" + scannerId);
-                            Session session = new Session(url, cloudEventBroker, accessToken);
+                            Session session = new Session(url, cloudEventBroker, cloudConnection);
                             listener.onResult(session);
                         }
 

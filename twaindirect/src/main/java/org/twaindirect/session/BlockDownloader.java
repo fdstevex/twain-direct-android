@@ -3,6 +3,7 @@ package org.twaindirect.session;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.twaindirect.cloud.CloudBlockRequest;
+import org.twaindirect.cloud.CloudConnection;
 import org.twaindirect.cloud.CloudEventBroker;
 
 import java.io.ByteArrayOutputStream;
@@ -53,7 +54,8 @@ public class BlockDownloader {
     private final SessionListener sessionListener;
 
     private final CloudEventBroker cloudEventBroker;
-    private final String cloudAuthToken;
+    private final CloudConnection cloudConnection;
+
     private ExecutorService executor = Executors.newFixedThreadPool(1);
 
     /**
@@ -99,12 +101,12 @@ public class BlockDownloader {
         completed
     }
 
-    public BlockDownloader(Session session, File tempDir, SessionListener sessionListener, CloudEventBroker cloudEventBroker, String cloudAuthToken) {
+    public BlockDownloader(Session session, File tempDir, SessionListener sessionListener, CloudEventBroker cloudEventBroker, CloudConnection cloudConnection) {
         this.session = session;
         this.tempDir = tempDir;
         this.sessionListener = sessionListener;
         this.cloudEventBroker = cloudEventBroker;
-        this.cloudAuthToken = cloudAuthToken;
+        this.cloudConnection = cloudConnection;
     }
 
     /**

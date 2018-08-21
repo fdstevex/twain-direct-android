@@ -379,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements SessionListener {
         if (scannerInfo.getType().equals(ScannerInfo.TYPE_CLOUD)) {
             TwainDirectSampleApplication application = (TwainDirectSampleApplication)getApplication();
 
-            CloudSession cloudSession = new CloudSession(scannerInfo.getCloudApiUrl(), scannerInfo.getCloudScannerId(), scannerInfo.getCloudAccessToken());
+            CloudSession cloudSession = new CloudSession(scannerInfo.getCloudApiUrl(), scannerInfo.getCloudScannerId(), application.cloudConnection);
             cloudSession.createSession(new AsyncResult<Session>() {
                 @Override
                 public void onResult(Session session) {

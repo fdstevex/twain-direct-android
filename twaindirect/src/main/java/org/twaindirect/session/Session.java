@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.twaindirect.cloud.CloudBlockRequest;
+import org.twaindirect.cloud.CloudConnection;
 import org.twaindirect.cloud.CloudEventBroker;
 
 import java.io.File;
@@ -133,8 +134,8 @@ public class Session {
     private boolean imageBlocksDrained;
     private BlockDownloader blockDownloader;
 
-    private String cloudAuthToken;
     private final CloudEventBroker cloudEventBroker;
+    private final CloudConnection cloudConnection;
 
     /**
      * Prepare a TWAIN Local session
@@ -145,6 +146,7 @@ public class Session {
         this.url = url;
         this.scannerIp = scannerIp;
         this.cloudEventBroker = null;
+        this.cloudConnection = null;
         reset();
 
         logger.info("Local session startup");
@@ -152,14 +154,11 @@ public class Session {
 
     /**
      * Prepare for a TWAIN Cloud session
-     * @param scannerUrl
-     * @param cloudEventBroker
-     * @param authToken
      */
-    public Session(URI scannerUrl, CloudEventBroker cloudEventBroker, String authToken) {
+    public Session(URI scannerUrl, CloudEventBroker cloudEventBroker, CloudConnection cloudConnection) {
         this.url = scannerUrl;
-        this.cloudAuthToken = authToken;
         this.cloudEventBroker = cloudEventBroker;
+        this.cloudConnection = cloudConnection;
         reset();
 
         logger.info("Cloud session startup");
@@ -238,12 +237,12 @@ public class Session {
     void getInfoEx(AsyncResult<JSONObject> listener) {
         URI infoUrl = url.resolve(url.getPath() + "/privet/infoex");
 
-        HttpJsonRequest request = new HttpJsonRequest();
+        HttpJsonRequest request =  new HttpJsonRequest();
         request.url = infoUrl;
         request.ipaddr = scannerIp;
         request.listener = listener;
         request.cloudEventBroker = cloudEventBroker;
-        request.authorization = cloudAuthToken;
+        request.cloudConnection = cloudConnection;
 
         // Must be included, but empty
         request.headers.put("X-Privet-Token", "");
@@ -314,7 +313,7 @@ public class Session {
                 request.requestBody = body;
                 request.headers.put("X-Privet-Token", privetToken);
                 request.ipaddr = scannerIp;
-                request.authorization = cloudAuthToken;
+                request.cloudConnection = cloudConnection;
                 request.cloudEventBroker = cloudEventBroker;
 
                 request.listener = new AsyncResult<JSONObject>() {
@@ -525,7 +524,7 @@ public class Session {
             return;
         }
 
-        blockDownloader = new BlockDownloader(this, tempDir, sessionListener, cloudEventBroker, cloudAuthToken);
+        blockDownloader = new BlockDownloader(this, tempDir, sessionListener, cloudEventBroker, cloudConnection);
 
         files.clear();
 
@@ -738,7 +737,7 @@ public class Session {
         }
 
         HttpJsonRequest request = new HttpJsonRequest();
-        request.authorization = cloudAuthToken;
+        request.cloudConnection = cloudConnection;
         request.cloudEventBroker = cloudEventBroker;
         request.url = endpoint;
         request.commandId = commandId;
@@ -786,10 +785,9 @@ public class Session {
      */
     public CloudBlockRequest createCloudBlockRequest(String blockId) {
         // Create and send the createSession request
-        CloudBlockRequest request = new CloudBlockRequest();
+        CloudBlockRequest request = new CloudBlockRequest(cloudConnection);
         request.url = url.resolve(url.getPath() + "/blocks/" + blockId);
         request.headers.put("X-Privet-Token", privetToken);
-        request.headers.put("Authorization", cloudAuthToken);
         return request;
     }
 

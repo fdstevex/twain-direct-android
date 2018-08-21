@@ -106,18 +106,19 @@ public class CloudLoginActivity extends AppCompatActivity {
                 String accessToken = data.getStringExtra(CloudLoginWebView.AUTH_TOKEN_KEY);
                 String refreshToken = data.getStringExtra(CloudLoginWebView.REFRESH_TOKEN_KEY);
 
-                logger.info("Received accessToken " + accessToken);
-
                 // Set the application's cloudConnection
                 try {
                     URI url = new URI(getEnteredUrl());
                     CloudConnection cloudConnection = new CloudConnection(url, accessToken, refreshToken);
-                    ((TwainDirectSampleApplication) getApplication()).cloudConnection = cloudConnection;
+                    TwainDirectSampleApplication application = (TwainDirectSampleApplication) getApplication();
+                    application.cloudConnection = cloudConnection;
+                    application.saveCloudConnectionTokens();
 
                     // Kick off the scanner list activity
                     Intent intent = new Intent(CloudLoginActivity.this, CloudScannerPickerActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
                     startActivity(intent);
+                    finish();
                 } catch (URISyntaxException e) {
                     logger.warning(e.getMessage());
                 }

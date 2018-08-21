@@ -11,6 +11,7 @@ import org.apache.http.util.EntityUtilsHC4;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.twaindirect.cloud.CloudConnection;
 import org.twaindirect.cloud.CloudEventBroker;
 import org.twaindirect.cloud.CloudEventBrokerListener;
 
@@ -42,10 +43,8 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
     public int readTimeout = 30000;
     public int connectTimeout = 15000;
 
-    // Value for the Authorization header - used for TWAIN Cloud
-    public String authorization;
-
     CloudEventBroker cloudEventBroker;
+    public CloudConnection cloudConnection;
 
     public AsyncResult<JSONObject> listener;
 
@@ -78,8 +77,8 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
 
             request.addHeader("Content-Type", "application/json; charset=UTF-8");
 
-            if (authorization != null) {
-                request.addHeader("Authorization", authorization);
+            if (cloudConnection != null) {
+                request.addHeader("Authorization", cloudConnection.getAccessToken());
             }
 
             // Set any custom headers
