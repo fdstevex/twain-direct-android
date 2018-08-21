@@ -25,6 +25,12 @@ public class CloudConnection {
 
     private ExecutorService executor = Executors.newFixedThreadPool(1);
 
+    public interface TokenRefreshListener {
+        void onAccessTokenRefreshed(CloudConnection cloudConnection);
+    }
+
+    public TokenRefreshListener tokenRefreshListener;
+
     public CloudConnection(URI apiUrl, String accessToken, String refreshToken) {
         this.apiUrl = apiUrl;
         this.accessToken = accessToken;
@@ -80,7 +86,7 @@ public class CloudConnection {
         HttpJsonRequest request = new HttpJsonRequest();
         request.url = apiUrl.resolve(apiUrl.getPath() + "/scanners");
         request.method = "GET";
-        request.headers.put("Authorization", accessToken);
+        request.cloudConnection = this;
 
         request.listener = new AsyncResult<JSONObject>() {
             @Override
@@ -106,7 +112,7 @@ public class CloudConnection {
         HttpJsonRequest request = new HttpJsonRequest();
         request.url = apiUrl.resolve(apiUrl.getPath() + "/user");
         request.method = "GET";
-        request.headers.put("Authorization", accessToken);
+        request.cloudConnection = this;
 
         request.listener = new AsyncResult<JSONObject>() {
             @Override
@@ -149,7 +155,7 @@ public class CloudConnection {
         HttpJsonRequest request = new HttpJsonRequest();
         request.url = apiUrl.resolve(apiUrl.getPath() + "/scanners/" + scannerId);
         request.method = "GET";
-        request.headers.put("Authorization", accessToken);
+        request.cloudConnection = this;
 
         request.listener = new AsyncResult<JSONObject>() {
             @Override
