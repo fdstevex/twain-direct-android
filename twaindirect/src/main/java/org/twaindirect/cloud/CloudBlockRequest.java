@@ -4,6 +4,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtilsHC4;
 import org.json.JSONObject;
 import org.twaindirect.session.AsyncResult;
 import org.twaindirect.session.HttpClientBuilder;
@@ -44,6 +45,9 @@ public class CloudBlockRequest implements Runnable {
     // We use this to get the access token and refresh it if required
     private final CloudConnection cloudConnection;
 
+    // Have we already attempted to refresh an expired access token?
+    private boolean attemptedTokenRefresh = false;
+
     @Override
     public void run() {
         String result = null;
@@ -67,6 +71,24 @@ public class CloudBlockRequest implements Runnable {
 
             // Send the request, pass on the response
             CloseableHttpResponse response = httpClient.execute(request);
+
+            // 401 can mean our OAuth2 access token has expired. Attempt to refresh it.
+            if (response.getStatusLine().getStatusCode() != 200) {
+                // 401 can mean our OAuth2 access token has expired. Attempt to refresh it.
+                if (response.getStatusLine().getStatusCode() == 401 && !attemptedTokenRefresh) {
+                    if (cloudConnection.refreshToken()) {
+                        // Retry
+                        run();
+                        return;
+                    }
+                }
+
+                String responseBody = EntityUtilsHC4.toString(response.getEntity(), "UTF-8");
+                logger.finest(responseBody);
+                listener.onError(new Exception("HTTP response " + response.getStatusLine().toString()));
+                return;
+            }
+
             listener.onResult(response.getEntity().getContent());
         } catch (IOException e) {
             listener.onError(e);

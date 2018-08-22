@@ -354,10 +354,11 @@ public class BlockDownloader {
                 }
             };
 
-            // Use either HttpBlockRequest or CloudBlockRequest depending on which
+            // Use either HttpBlockRequest or cloudListener depending on which
             // protocol we're using
             if (cloudEventBroker != null) {
                 HttpJsonRequest request = session.createJsonRequest("readImageBlock", params);
+                request.readTimeout = 120000;
                 request.listener = cloudListener;
                 executor.submit(request);
             } else {

@@ -1,11 +1,19 @@
 package org.twaindirect.cloud;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGetHC4;
+import org.apache.http.client.methods.HttpRequestBaseHC4;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtilsHC4;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.twaindirect.session.AsyncResult;
+import org.twaindirect.session.HttpClientBuilder;
 import org.twaindirect.session.HttpJsonRequest;
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -22,6 +30,7 @@ public class CloudConnection {
     private URI apiUrl;
     private String accessToken;
     private String refreshToken;
+    private boolean refreshingToken = false;
 
     private ExecutorService executor = Executors.newFixedThreadPool(1);
 
@@ -181,6 +190,53 @@ public class CloudConnection {
         };
 
         executor.submit(request);
+    }
+
+    /**
+     * Synchronously refresh the access token.
+     * @return
+     */
+    public boolean refreshToken() {
+        // If more than one request calls refreshToken, block the other requests until the
+        // first one finishes.
+        synchronized(this) {
+            if (refreshingToken) {
+                return true;
+            }
+
+            refreshingToken = true;
+
+            logger.fine("Refreshing OAuth2 access token");
+
+            URI uri = apiUrl.resolve(apiUrl.getPath() + "/authentication/refresh/" + refreshToken);
+
+            CloseableHttpClient httpClient = null;
+            try {
+                httpClient = HttpClientBuilder.createHttpClient(uri.getHost(), null);
+                HttpRequestBaseHC4 request = new HttpGetHC4(uri.toString());
+                request.addHeader("Authorization", accessToken);
+                CloseableHttpResponse response = httpClient.execute(request);
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    logger.warning("Token refresh returned " + response.getStatusLine().toString());
+                    return false;
+                }
+                String json = EntityUtilsHC4.toString(response.getEntity(), "UTF-8");
+                JSONObject jsonObject = new JSONObject(json);
+                accessToken = jsonObject.getString("authorizationToken");
+                refreshToken = jsonObject.getString("refreshToken");
+                if (tokenRefreshListener != null) {
+                    tokenRefreshListener.onAccessTokenRefreshed(this);
+                }
+                logger.fine("Token refresh successful");
+                return true;
+            } catch (UnknownHostException e) {
+                logger.warning(e.getMessage());
+                return false;
+            } catch (IOException e) {
+                logger.warning(e.getMessage());
+                return false;
+            }
+        }
     }
 
     public URI getApiUrl() {

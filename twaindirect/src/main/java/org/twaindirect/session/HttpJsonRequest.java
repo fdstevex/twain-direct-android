@@ -52,6 +52,8 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
 
     public JSONObject requestBody;
 
+    private boolean attemptedTokenRefresh = false;
+
     @Override
     public void run() {
         String result = null;
@@ -102,15 +104,25 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
             CloseableHttpResponse response = httpClient.execute(request);
 
             if (cloudEventBroker == null) {
-                // Not using MQTT, so we will have the response here
+                // Not using MQTT for this request, so we will have the response here
                 String json = EntityUtilsHC4.toString(response.getEntity(), "UTF-8");
                 processResponse(json);
             } else {
                 // Check for an error sending the request
                 if (response.getStatusLine().getStatusCode() != 200) {
-                    logger.warning("HTTP response " + response.getStatusLine().toString());
+                    // 401 can mean our OAuth2 access token has expired. Attempt to refresh it.
+                    if (response.getStatusLine().getStatusCode() == 401 && !attemptedTokenRefresh) {
+                        if (cloudConnection.refreshToken()) {
+                            // Retry
+                            run();
+                            return;
+                        }
+                    }
+
                     String responseBody = EntityUtilsHC4.toString(response.getEntity(), "UTF-8");
                     logger.finest(responseBody);
+                    listener.onError(new Exception("HTTP response " + response.getStatusLine().toString()));
+                    return;
                 }
 
                 // Block here for the response
@@ -136,7 +148,7 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
             // Ok that didn't work, let's try converting it to a JSONArray
         }
 
-        // If root object is an array .. wrap it an an object just so we can return it
+        // If root waitFobject is an array .. wrap it an an object just so we can return it
         // as a JSONObject.
         try {
             JSONArray jsonArray = new JSONArray(json);

@@ -66,6 +66,7 @@ class HttpBlockRequest implements Runnable {
 
             // Connect to our url, get the response
             CloseableHttpResponse response = httpClient.execute(request);
+
             // If we're local, we will have the result now
             listener.onResult(response.getEntity().getContent());
         } catch (IOException e) {
