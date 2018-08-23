@@ -61,30 +61,6 @@ public class CloudLoginActivity extends AppCompatActivity {
                 startActivityForResult(i, 1);
             }
         });
-
-        // Development support - we don't have the redirect from the authentication endpoints
-        // back to the app's URL scheme yet, so for now the user can paste in an auth
-        // token and hit the Proceed button, and we'll treat that as the callback.
-        Button proceedButton = (Button)findViewById(R.id.proceed_button);
-        proceedButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String accessToken = ((EditText)findViewById(R.id.auth_token)).getText().toString();
-                try {
-                    URI url = new URI(getEnteredUrl());
-
-                    // Set the application's cloudConnection
-                    CloudConnection cloudConnection = new CloudConnection(url, accessToken, null);
-                    ((TwainDirectSampleApplication)getApplication()).cloudConnection = cloudConnection;
-
-                    // Kick off the scanner list activity
-                    Intent intent = new Intent(CloudLoginActivity.this, CloudScannerPickerActivity.class);
-                    startActivity(intent);
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
     }
 
     /**
