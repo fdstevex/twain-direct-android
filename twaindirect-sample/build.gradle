@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         maven { url 'https://maven.fabric.io/public' }
+        google()
     }
 
     dependencies {
@@ -12,8 +13,8 @@ apply plugin: 'io.fabric'
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
+    google()
 }
-
 
 android {
     compileSdkVersion 26
@@ -22,8 +23,8 @@ android {
         applicationId "org.twaindirect.sample"
         minSdkVersion 18
         targetSdkVersion 26
-        versionCode 14
-        versionName "1.0.0.15"
+        versionCode 16
+        versionName "1.0.0.16"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -44,9 +45,9 @@ dependencies {
     implementation('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
         transitive = true;
     }
-    implementation 'com.android.support:appcompat-v7:26.+'
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    implementation 'com.android.support:design:26.+'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    implementation 'com.android.support:design:26.1.0'
     implementation 'com.sun.mail:android-mail:1.5.5'
     implementation 'com.sun.mail:android-activation:1.5.5'
     implementation 'com.youview:tinydnssd:1.2.7'
