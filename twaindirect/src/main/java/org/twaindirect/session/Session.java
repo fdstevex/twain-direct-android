@@ -524,7 +524,7 @@ public class Session {
             return;
         }
 
-        blockDownloader = new BlockDownloader(this, tempDir, sessionListener, cloudEventBroker, cloudConnection);
+        blockDownloader = new BlockDownloader(this, tempDir, sessionListener, cloudEventBroker);
 
         files.clear();
 

@@ -68,7 +68,7 @@ public class TwainDirectSampleApplication extends Application {
             editor.putString(ACCESS_TOKEN_KEY, cloudConnection.getAccessToken());
             editor.putString(REFRESH_TOKEN_KEY, cloudConnection.getRefreshToken());
             editor.putString(CLOUD_API_URL_KEY, cloudConnection.getApiUrl().toString());
-            editor.commit();
+            editor.apply();
         }
     }
 }

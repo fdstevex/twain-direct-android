@@ -54,7 +54,6 @@ public class BlockDownloader {
     private final SessionListener sessionListener;
 
     private final CloudEventBroker cloudEventBroker;
-    private final CloudConnection cloudConnection;
 
     private ExecutorService executor = Executors.newFixedThreadPool(1);
 
@@ -101,12 +100,11 @@ public class BlockDownloader {
         completed
     }
 
-    public BlockDownloader(Session session, File tempDir, SessionListener sessionListener, CloudEventBroker cloudEventBroker, CloudConnection cloudConnection) {
+    public BlockDownloader(Session session, File tempDir, SessionListener sessionListener, CloudEventBroker cloudEventBroker) {
         this.session = session;
         this.tempDir = tempDir;
         this.sessionListener = sessionListener;
         this.cloudEventBroker = cloudEventBroker;
-        this.cloudConnection = cloudConnection;
     }
 
     /**

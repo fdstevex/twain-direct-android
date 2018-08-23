@@ -666,7 +666,7 @@ public class MainActivity extends AppCompatActivity implements SessionListener {
         if (selectedScannerJSON != null) {
             ScannerInfo scannerInfo = ScannerInfo.fromJSON(selectedScannerJSON);
             if (scannerInfo != null) {
-                if (scannerInfo.getType() == ScannerInfo.TYPE_CLOUD) {
+                if (scannerInfo.getType().equals(ScannerInfo.TYPE_CLOUD)) {
                     // We can't currently determine if a cloud scanner is offline
                     // or not, so assume it's online.
                     scannerOnline = true;

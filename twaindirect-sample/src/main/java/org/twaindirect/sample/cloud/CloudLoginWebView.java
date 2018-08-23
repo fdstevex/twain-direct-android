@@ -1,5 +1,6 @@
 package org.twaindirect.sample.cloud;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +21,7 @@ public class CloudLoginWebView extends AppCompatActivity {
     public static final String AUTH_TOKEN_KEY = "authToken";
     public static final String REFRESH_TOKEN_KEY = "refreshToken";
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

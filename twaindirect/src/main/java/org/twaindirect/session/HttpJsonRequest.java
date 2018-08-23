@@ -112,6 +112,7 @@ public class HttpJsonRequest implements Runnable, CloudEventBrokerListener {
                 if (response.getStatusLine().getStatusCode() != 200) {
                     // 401 can mean our OAuth2 access token has expired. Attempt to refresh it.
                     if (response.getStatusLine().getStatusCode() == 401 && !attemptedTokenRefresh) {
+                        attemptedTokenRefresh = true;
                         if (cloudConnection.refreshToken()) {
                             // Retry
                             run();

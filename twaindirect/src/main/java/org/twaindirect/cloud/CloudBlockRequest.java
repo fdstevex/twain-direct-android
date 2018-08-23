@@ -5,7 +5,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGetHC4;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtilsHC4;
-import org.json.JSONObject;
 import org.twaindirect.session.AsyncResult;
 import org.twaindirect.session.HttpClientBuilder;
 
@@ -16,9 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-
 /**
  * Download an image block from the cloud endpoint.
+ * This is a simple HTTP request that returns base64
+ * encoded image data.
  */
 public class CloudBlockRequest implements Runnable {
     private static final Logger logger = Logger.getLogger(CloudBlockRequest.class.getName());
@@ -76,6 +76,7 @@ public class CloudBlockRequest implements Runnable {
             if (response.getStatusLine().getStatusCode() != 200) {
                 // 401 can mean our OAuth2 access token has expired. Attempt to refresh it.
                 if (response.getStatusLine().getStatusCode() == 401 && !attemptedTokenRefresh) {
+                    attemptedTokenRefresh = true;
                     if (cloudConnection.refreshToken()) {
                         // Retry
                         run();

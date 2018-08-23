@@ -23,11 +23,6 @@ import java.net.URI;
  */
 public class CloudSession {
     /**
-     * The TWAIN Direct session for communicating with the scanner.
-     */
-    private Session session;
-
-    /**
      * The URL for the TWAIN Cloud service
      */
     private URI apiRoot;
@@ -73,7 +68,7 @@ public class CloudSession {
             @Override
             public void onResult(CloudEventBrokerInfo eventBrokerInfo) {
                 try {
-                    cloudEventBroker = new CloudEventBroker(accessToken, eventBrokerInfo);
+                    cloudEventBroker = new CloudEventBroker(cloudConnection.getAccessToken(), eventBrokerInfo);
                     cloudEventBroker.connect(new AsyncResponse() {
                         @Override
                         public void onSuccess() {

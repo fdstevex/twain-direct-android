@@ -27,13 +27,24 @@ import java.util.logging.Logger;
 public class CloudConnection {
     private static final Logger logger = Logger.getLogger(CloudConnection.class.getName());
 
+    // URL for the REST API
     private URI apiUrl;
+
+    // OAuth2 Access Token
     private String accessToken;
+
+    // OAuth2 Refresh Token
     private String refreshToken;
+
+    // Are we currently in the middle of a token refresh?
+    // If so, when another request fails, hold on to it until
+    // the refresh completes and use the new token.
     private boolean refreshingToken = false;
 
     private ExecutorService executor = Executors.newFixedThreadPool(1);
 
+    // Interface used to listen for token refreshes so the updated
+    // tokens can be saved for the next session.
     public interface TokenRefreshListener {
         void onAccessTokenRefreshed(CloudConnection cloudConnection);
     }
@@ -46,6 +57,9 @@ public class CloudConnection {
         this.refreshToken = refreshToken;
     }
 
+    /**
+     * Request a list of scanners from the service.
+     */
     public void getScannerList(final AsyncResult<List<CloudScannerInfo>> response) {
         getEventBrokerInfo(new AsyncResult<CloudEventBrokerInfo>() {
             @Override
@@ -88,7 +102,6 @@ public class CloudConnection {
 
     /**
      * Fetch the scanner list JSON
-     * @param response
      */
     private void getScannerListJSON(final AsyncResult<JSONObject> response) {
         // First request the user endpoint, so we know the MQTT response topic to subscribe to
@@ -114,7 +127,6 @@ public class CloudConnection {
 
     /**
      * Fetch the /user endpoint and extract the EventBroker info
-     * @param response
      */
     public void getEventBrokerInfo(final AsyncResult<CloudEventBrokerInfo> response) {
         // First request the user endpoint, so we know the MQTT response topic to subscribe to
@@ -157,8 +169,8 @@ public class CloudConnection {
     }
 
     /**
-     * Fetch the cloud JSON info for the specified scanner.
-     * @param response
+     * Fetch info for the specified scanner.
+     * Returns the JSON we received from the cloud service.
      */
     public void getScannerInfoJSON(String scannerId, final AsyncResult<JSONObject> response) {
         HttpJsonRequest request = new HttpJsonRequest();
