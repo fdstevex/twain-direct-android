@@ -172,16 +172,6 @@ public class ScannerInfo {
                 String urlString = json.getString("url");
                 String fqdn = json.getString("fqdn");
                 String ipaddr = json.getString("ipaddr");
-                JSONObject map = json.getJSONObject("txt");
-
-                // The txt dictionary is stored as a JSONObject - convert it back
-                // into a Map<String, String>
-                Map<String, String> txtDict = new HashMap<String, String>();
-                Iterator<String> keys = map.keys();
-                while (keys.hasNext()){
-                    String key = keys.next();
-                    txtDict.put(key, map.getString(key));
-                }
 
                 URI url = new URI(urlString);
                 return new ScannerInfo(url, ipaddr, fqdn, name, note);
