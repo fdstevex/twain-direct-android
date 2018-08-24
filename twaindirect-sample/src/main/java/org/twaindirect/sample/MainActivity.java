@@ -578,6 +578,72 @@ public class MainActivity extends AppCompatActivity implements SessionListener {
         return name;
     }
 
+    /**
+     * If this is a local scanner, send it a request to see if it's online.
+     */
+    protected void scannerOnlineCheck() {
+        // Start discovery - we use this to update the label to indicate the scanner is online
+        scannerOnline = false;
+
+        // Determine if the selected scanner is a cloud scanner.
+        boolean shouldDiscover = true;
+        SharedPreferences prefs = Preferences.getSharedPreferences(MainActivity.this);
+        String selectedScannerJSON = prefs.getString("selectedScanner", null);
+        if (selectedScannerJSON != null) {
+            ScannerInfo scannerInfo = ScannerInfo.fromJSON(selectedScannerJSON);
+            if (scannerInfo != null) {
+                if (scannerInfo.getType().equals(ScannerInfo.TYPE_CLOUD)) {
+                    // We can't currently determine if a cloud scanner is offline
+                    // or not, so assume it's online.
+                    scannerOnline = true;
+                    shouldDiscover = false;
+                }
+            }
+        }
+
+        if (shouldDiscover) {
+            serviceDiscoverer = new AndroidServiceDiscoverer(this, new ScannerDiscoveredListener() {
+                @Override
+                public void onDiscoveredScannerListChanged(final List<ScannerInfo> discoveredScanners) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            scannerOnline = false;
+
+                            // Get the currently selected scanner
+                            SharedPreferences prefs = Preferences.getSharedPreferences(MainActivity.this);
+                            String selectedScannerJSON = prefs.getString("selectedScanner", null);
+                            if (selectedScannerJSON != null) {
+                                ScannerInfo scannerInfo = ScannerInfo.fromJSON(selectedScannerJSON);
+                                if (scannerInfo != null) {
+                                    // We have a selected local scanner .. see if it matches any of the
+                                    // discovered scanners
+                                    for (ScannerInfo discoveredScanner : discoveredScanners) {
+                                        if (discoveredScanner.getUrl().equals(scannerInfo.getUrl())) {
+                                            if (discoveredScanner.getNote().equals(scannerInfo.getNote())) {
+                                                // Found it, it's online.
+                                                scannerOnline = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            updateLabels();
+                            updateButtons();
+                        }
+                    });
+                }
+            });
+
+            serviceDiscoverer.start();
+        }
+
+        updateLabels();
+        updateButtons();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
@@ -657,58 +723,7 @@ public class MainActivity extends AppCompatActivity implements SessionListener {
     protected void onResume() {
         super.onResume();
 
-        // Start discovery - we use this to update the label to indicate the scanner is online
-        scannerOnline = false;
-
-        // Determine if the selected scanner is a cloud scanner.
-        SharedPreferences prefs = Preferences.getSharedPreferences(MainActivity.this);
-        String selectedScannerJSON = prefs.getString("selectedScanner", null);
-        if (selectedScannerJSON != null) {
-            ScannerInfo scannerInfo = ScannerInfo.fromJSON(selectedScannerJSON);
-            if (scannerInfo != null) {
-                if (scannerInfo.getType().equals(ScannerInfo.TYPE_CLOUD)) {
-                    // We can't currently determine if a cloud scanner is offline
-                    // or not, so assume it's online.
-                    scannerOnline = true;
-                }
-            }
-        }
-
-        serviceDiscoverer = new AndroidServiceDiscoverer(this, new ScannerDiscoveredListener() {
-            @Override
-            public void onDiscoveredScannerListChanged(final List<ScannerInfo> discoveredScanners) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        scannerOnline = false;
-
-                        // Get the currently selected scanner
-                        SharedPreferences prefs = Preferences.getSharedPreferences(MainActivity.this);
-                        String selectedScannerJSON = prefs.getString("selectedScanner", null);
-                        if (selectedScannerJSON != null) {
-                            ScannerInfo scannerInfo = ScannerInfo.fromJSON(selectedScannerJSON);
-                            if (scannerInfo != null) {
-                                // We have a selected local scanner .. see if it matches any of the
-                                // discovered scanners
-                                for (ScannerInfo discoveredScanner : discoveredScanners) {
-                                    if (discoveredScanner.getUrl().equals(scannerInfo.getUrl())) {
-                                        if (discoveredScanner.getNote().equals(scannerInfo.getNote())) {
-                                            // Found it, it's online.
-                                            scannerOnline = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        updateLabels();
-                        updateButtons();
-                    }
-                });
-            }
-        });
-        serviceDiscoverer.start();
+        scannerOnlineCheck();
 
         updateLabels();
         updateButtons();
@@ -721,7 +736,10 @@ public class MainActivity extends AppCompatActivity implements SessionListener {
     protected void onPause() {
         super.onPause();
 
-        serviceDiscoverer.stop();
+        if (serviceDiscoverer != null) {
+            serviceDiscoverer.stop();
+            serviceDiscoverer = null;
+        }
     }
 
     /**
