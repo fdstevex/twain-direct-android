@@ -23,8 +23,8 @@ android {
         applicationId "org.twaindirect.sample"
         minSdkVersion 18
         targetSdkVersion 26
-        versionCode 16
-        versionName "1.0.0.16"
+        versionCode 18
+        versionName "1.0.0.18"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

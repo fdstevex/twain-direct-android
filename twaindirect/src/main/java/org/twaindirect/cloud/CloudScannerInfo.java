@@ -1,6 +1,7 @@
 package org.twaindirect.cloud;
 
 import org.json.JSONObject;
+import org.twaindirect.session.URIUtils;
 
 import java.net.URI;
 
@@ -18,7 +19,7 @@ public class CloudScannerInfo {
     public CloudScannerInfo(URI baseUrl, CloudEventBrokerInfo eventBrokerInfo, JSONObject cloudScannerJSON) {
         this.cloudScannerJSON = cloudScannerJSON;
 
-        this.cloudUrl = baseUrl.resolve(baseUrl.getPath() + "/scanners/" + getScannerId());
+        this.cloudUrl = URIUtils.appendPathToURI(baseUrl, "/scanners/" + getScannerId());
     }
 
     public String getScannerId() {

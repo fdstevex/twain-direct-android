@@ -4,6 +4,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.twaindirect.session.AsyncResponse;
 import org.twaindirect.session.AsyncResult;
 import org.twaindirect.session.Session;
+import org.twaindirect.session.URIUtils;
 
 import java.net.URI;
 
@@ -72,7 +73,7 @@ public class CloudSession {
                     cloudEventBroker.connect(new AsyncResponse() {
                         @Override
                         public void onSuccess() {
-                            URI url = apiRoot.resolve(apiRoot.getPath() + "/scanners/" + scannerId);
+                            URI url = URIUtils.appendPathToURI(apiRoot, "/scanners/" + scannerId);
                             Session session = new Session(url, cloudEventBroker, cloudConnection);
                             listener.onResult(session);
                         }

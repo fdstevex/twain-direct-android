@@ -139,7 +139,7 @@ public class Session {
 
     /**
      * Prepare a TWAIN Local session
-     * @param url For example, https://myscanner.local:34034/
+     * @param url For example, https://myscanner.local:34034
      * @param scannerIp The IP address that "myscanner.local" resolves to, for mDNS name resolution.
      */
     public Session(URI url, String scannerIp) {
@@ -235,7 +235,7 @@ public class Session {
      * @param listener
      */
     void getInfoEx(AsyncResult<JSONObject> listener) {
-        URI infoUrl = url.resolve(url.getPath() + "/privet/infoex");
+        URI infoUrl = URIUtils.appendPathToURI(url, "/privet/infoex");
 
         HttpJsonRequest request =  new HttpJsonRequest();
         request.url = infoUrl;
@@ -275,7 +275,7 @@ public class Session {
                     infoExResult = result;
                     privetToken = result.getString("x-privet-token");
                     String apiPath = result.getJSONArray("api").getString(0);
-                    endpoint = url.resolve(url.getPath() + apiPath);
+                    endpoint = URIUtils.appendPathToURI(url, apiPath);
 
                     // try again now that we have the privet token
                     open(listener);
@@ -786,7 +786,7 @@ public class Session {
     public CloudBlockRequest createCloudBlockRequest(String blockId) {
         // Create and send the createSession request
         CloudBlockRequest request = new CloudBlockRequest(cloudConnection);
-        request.url = url.resolve(url.getPath() + "/blocks/" + blockId);
+        request.url = URIUtils.appendPathToURI(url, "/blocks/" + blockId);
         request.headers.put("X-Privet-Token", privetToken);
         return request;
     }

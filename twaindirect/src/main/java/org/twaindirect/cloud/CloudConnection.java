@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.twaindirect.session.AsyncResult;
 import org.twaindirect.session.HttpClientBuilder;
 import org.twaindirect.session.HttpJsonRequest;
+import org.twaindirect.session.URIUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -106,7 +107,7 @@ public class CloudConnection {
     private void getScannerListJSON(final AsyncResult<JSONObject> response) {
         // First request the user endpoint, so we know the MQTT response topic to subscribe to
         HttpJsonRequest request = new HttpJsonRequest();
-        request.url = apiUrl.resolve(apiUrl.getPath() + "/scanners");
+        request.url = URIUtils.appendPathToURI(apiUrl, "/scanners");
         request.method = "GET";
         request.cloudConnection = this;
 
@@ -131,7 +132,7 @@ public class CloudConnection {
     public void getEventBrokerInfo(final AsyncResult<CloudEventBrokerInfo> response) {
         // First request the user endpoint, so we know the MQTT response topic to subscribe to
         HttpJsonRequest request = new HttpJsonRequest();
-        request.url = apiUrl.resolve(apiUrl.getPath() + "/user");
+        request.url = URIUtils.appendPathToURI(apiUrl, "/user");
         request.method = "GET";
         request.cloudConnection = this;
 
@@ -174,7 +175,7 @@ public class CloudConnection {
      */
     public void getScannerInfoJSON(String scannerId, final AsyncResult<JSONObject> response) {
         HttpJsonRequest request = new HttpJsonRequest();
-        request.url = apiUrl.resolve(apiUrl.getPath() + "/scanners/" + scannerId);
+        request.url = URIUtils.appendPathToURI(apiUrl, "/scanners/" + scannerId);
         request.method = "GET";
         request.cloudConnection = this;
 
@@ -220,7 +221,7 @@ public class CloudConnection {
 
             logger.fine("Refreshing OAuth2 access token");
 
-            URI uri = apiUrl.resolve(apiUrl.getPath() + "/authentication/refresh/" + refreshToken);
+            URI uri = URIUtils.appendPathToURI(apiUrl, "/authentication/refresh/" + refreshToken);
 
             CloseableHttpClient httpClient = null;
             try {
