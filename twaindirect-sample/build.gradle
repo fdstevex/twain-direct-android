@@ -56,4 +56,8 @@ dependencies {
         exclude group: 'org.json', module: 'json'
         exclude group: 'org.apache.httpcomponents', module: 'httpclient'
     }
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
+
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'

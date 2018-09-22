@@ -69,7 +69,17 @@
         <activity
             android:name=".cloud.CloudScannerPickerActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".cloud.CloudLoginWebView"></activity>
+        <activity android:name=".cloud.CloudLoginWebView" />
+
+        <activity
+            android:name=".cloud.CloudDiscoverActivity"
+            android:label="@string/title_activity_cloud_discover"
+            android:parentActivityName=".cloud.CloudLoginActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.twaindirect.sample.cloud.CloudLoginActivity" />
+        </activity>
     </application>
 
 </manifest>

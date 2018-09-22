@@ -234,7 +234,7 @@ public class Session {
      *
      * @param listener
      */
-    void getInfoEx(AsyncResult<JSONObject> listener) {
+    public void getInfoEx(AsyncResult<JSONObject> listener) {
         URI infoUrl = URIUtils.appendPathToURI(url, "/privet/infoex");
 
         HttpJsonRequest request =  new HttpJsonRequest();

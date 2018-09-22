@@ -61,6 +61,15 @@ public class CloudLoginActivity extends AppCompatActivity {
                 startActivityForResult(i, 1);
             }
         });
+
+        Button discoverButton = (Button)findViewById(R.id.discover);
+        discoverButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(CloudLoginActivity.this, CloudDiscoverActivity.class);
+                startActivityForResult(i, 2);
+            }
+        });
     }
 
     /**
@@ -78,6 +87,7 @@ public class CloudLoginActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1) {
+            // Response from cloud login
             if (data != null) {
                 String accessToken = data.getStringExtra(CloudLoginWebView.AUTH_TOKEN_KEY);
                 String refreshToken = data.getStringExtra(CloudLoginWebView.REFRESH_TOKEN_KEY);
@@ -97,6 +107,16 @@ public class CloudLoginActivity extends AppCompatActivity {
                     finish();
                 } catch (URISyntaxException e) {
                     logger.warning(e.getMessage());
+                }
+            }
+        }
+
+        if (requestCode == 2) {
+            // Response from cloud discovery
+            if (data != null) {
+                String urlString = data.getStringExtra(CloudDiscoverActivity.CLOUD_URL_KEY);
+                if (urlString != null && urlString.length() > 0) {
+                    urlEditor.setText(urlString);
                 }
             }
         }
